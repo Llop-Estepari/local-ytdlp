@@ -1,6 +1,6 @@
 # Referencia de la API
 
-La API se sirve en `http://127.0.0.1:8765/api` (configurable con `LOCAL_YTDLP_PORT`). El frontend de producción se sirve desde el mismo origen; en desarrollo, Next.js usa `http://127.0.0.1:3000`.
+La API se sirve en `http://127.0.0.1:8765/api` (configurable con `LOCAL_YTDLP_PORT`). La aplicación de escritorio y el frontend de producción se sirven desde el mismo origen; en desarrollo, Next.js usa `http://127.0.0.1:3000`.
 
 La documentación interactiva de FastAPI está desactivada. El esquema OpenAPI está disponible en `GET /api/openapi.json` (requiere token).
 

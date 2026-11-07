@@ -5,16 +5,20 @@
 - Python 3.10 o superior.
 - Node.js 20 o superior y npm (solo para compilar la interfaz).
 - FFmpeg disponible en el `PATH`.
+- Una WebView del sistema para la ventana nativa:
+  - Linux: PyGObject y WebKitGTK 4.1.
+  - Windows: Microsoft Edge WebView2.
+  - macOS: WKWebView (incluido en el sistema).
 - Conexión a Internet para descargar el contenido y comprobar actualizaciones.
 
-yt-dlp se instala dentro de `backend/.venv`, por lo que no es necesario instalarlo globalmente.
+yt-dlp y pywebview se instalan dentro de `backend/.venv`, por lo que no es necesario instalarlos globalmente.
 
 ## Instalación manual
 
 ```bash
 # 1. Entorno de Python
 cd backend
-python3 -m venv .venv
+python3 -m venv --system-site-packages .venv
 .venv/bin/pip install -r requirements.txt
 
 # 2. Interfaz
@@ -22,10 +26,12 @@ cd ../frontend
 npm install
 npm run build
 
-# 3. Inicio
+# 3. Inicio en ventana nativa
 cd ..
 ./scripts/run.sh
 ```
+
+`--system-site-packages` permite que la ventana nativa use PyGObject y WebKitGTK instalados por el sistema. En macOS y Windows no es necesario, pero tampoco molesta.
 
 En Windows:
 
@@ -42,6 +48,8 @@ cd ..
 .\run.ps1
 ```
 
+Para usar el navegador en lugar de la ventana nativa, añade `--browser` al lanzador.
+
 ## Instaladores
 
 ### Linux
@@ -49,9 +57,10 @@ cd ..
 `installer/linux/install.sh`:
 
 - Comprueba Python 3.10+ y Node.js 20+.
-- Crea `backend/.venv` e instala FastAPI y yt-dlp.
+- Crea `backend/.venv` con acceso a los paquetes del sistema e instala FastAPI, pywebview y yt-dlp.
 - Ejecuta `npm ci` y `npm run build`.
 - Detecta FFmpeg y muestra el comando de instalación si falta.
+- Comprueba WebKitGTK 4.1 y muestra el comando de instalación si falta.
 - Crea `~/.local/bin/local-ytdlp` y `~/.local/share/applications/local-ytdlp.desktop`.
 
 ### macOS
@@ -62,7 +71,7 @@ cd ..
 - Crea el entorno e instala dependencias.
 - Compila la interfaz.
 - Instala FFmpeg con Homebrew si está disponible; si no, muestra instrucciones.
-- Crea `~/Applications/Local YT-DLP.command`.
+- Crea la aplicación `~/Applications/Local YT-DLP.app` con su `Info.plist` y su lanzador.
 
 ### Windows
 
@@ -72,9 +81,55 @@ cd ..
 - Crea `backend\.venv` e instala dependencias.
 - Compila la interfaz con npm.
 - Instala FFmpeg con winget si falta y winget está disponible.
-- Crea `Start Local YT-DLP.bat` y un acceso directo en el escritorio.
+- Comprueba Microsoft Edge WebView2 y muestra cómo instalarlo si falta.
+- Crea `Start Local YT-DLP.bat` para diagnóstico y un acceso directo en el escritorio que abre la ventana sin consola.
 
 ## Solución de problemas
+
+### La aplicación se abre en el navegador en lugar de la ventana
+
+Falta la WebView del sistema o pywebview no puede cargarla.
+
+- Linux: instala PyGObject y WebKitGTK:
+
+  ```bash
+  # Debian / Ubuntu
+  sudo apt install python3-gi gir1.2-webkit2-4.1
+
+  # Fedora
+  sudo dnf install python3-gobject webkit2gtk4.1
+
+  # Arch Linux
+  sudo pacman -S python-gobject webkit2gtk-4.1
+
+  # openSUSE
+  sudo zypper install python3-gobject typelib-1_0-WebKit2-4_1
+  ```
+
+  Vuelve a ejecutar el instalador para recrear el entorno con acceso a los paquetes del sistema.
+
+- Windows: instala Microsoft Edge WebView2 desde <https://developer.microsoft.com/microsoft-edge/webview2/>.
+- macOS: usa una versión reciente de macOS; WKWebView viene incluido.
+
+También puedes revisar el motivo con:
+
+```bash
+./scripts/run.sh --debug
+```
+
+### La ventana nativa aparece en blanco o congelada (Linux)
+
+Algunos controladores gráficos tienen problemas con la composición de WebKitGTK. Prueba a desactivarla:
+
+```bash
+WEBKIT_DISABLE_COMPOSITING_MODE=1 ./scripts/run.sh
+```
+
+Si el problema continúa, usa temporalmente el modo navegador con `--browser`.
+
+### La ventana no se abre en Windows
+
+El acceso directo usa `pythonw.exe` y no muestra errores. Ejecuta `Start Local YT-DLP.bat` para ver la consola de diagnóstico o revisa `<DATA_DIR>\logs\app.log`. Comprueba también que Microsoft Edge WebView2 esté instalado.
 
 ### «El frontend no está compilado»
 
@@ -93,6 +148,8 @@ Cierra el programa que lo usa o inicia en otro puerto:
 ```bash
 LOCAL_YTDLP_PORT=9000 ./scripts/run.sh
 ```
+
+En modo escritorio el puerto solo se usa internamente.
 
 ### FFmpeg no está instalado
 
@@ -127,7 +184,7 @@ La aplicación solo admite listas públicas. Comprueba que el enlace sea el de l
 
 ### El token no es válido o la sesión caduca
 
-Recarga la página. El frontend solicita un token nuevo a `GET /api/session`. En modo red, comprueba que la URL incluye `#token=...` con el token configurado.
+Cierra y vuelve a abrir la aplicación. El frontend solicita un token nuevo a `GET /api/session`. En modo red, comprueba que la URL incluye `#token=...` con el token configurado.
 
 ### No se puede abrir la carpeta
 
@@ -140,7 +197,7 @@ Revisa `<DATA_DIR>/logs/app.log`. Las causas habituales son falta de espacio, pe
 ## Actualizar
 
 ```bash
-# Dependencias de Python (incluye yt-dlp)
+# Dependencias de Python (incluye yt-dlp y pywebview)
 backend/.venv/bin/pip install --upgrade -r backend/requirements.txt
 
 # Interfaz
@@ -154,10 +211,10 @@ También puedes usar el botón **Comprobar** del pie de la aplicación para cons
 ## Desinstalar
 
 - Linux: elimina `~/.local/bin/local-ytdlp`, `~/.local/share/applications/local-ytdlp.desktop` y la carpeta del proyecto.
-- macOS: elimina `~/Applications/Local YT-DLP.command` y la carpeta del proyecto.
+- macOS: elimina `~/Applications/Local YT-DLP.app` y la carpeta del proyecto.
 - Windows: elimina el acceso directo del escritorio, `Start Local YT-DLP.bat` y la carpeta del proyecto.
 
-Los datos locales (token, logs y temporales) están en:
+Los datos locales (token, logs, temporales y almacenamiento de la ventana) están en:
 
 | Sistema | Ruta |
 | --- | --- |

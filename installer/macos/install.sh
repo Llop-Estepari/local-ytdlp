@@ -38,7 +38,7 @@ if [ "$NODE_MAJOR" -lt 20 ]; then
   fail "Se requiere Node.js 20 o superior (detectado $(node --version))."
 fi
 
-say "Compilando la interfaz web…"
+say "Compilando la interfaz…"
 cd frontend
 if [ -f package-lock.json ]; then
   npm ci --no-audit --no-fund
@@ -75,17 +75,52 @@ printf 'yt-dlp detectado: %s\n' "$("$VENV_PYTHON" -m yt_dlp --version 2>/dev/nul
 chmod +x scripts/run.sh scripts/dev.sh run.command
 
 APP_DIR="$HOME/Applications"
+APP_BUNDLE="$APP_DIR/Local YT-DLP.app"
 mkdir -p "$APP_DIR"
-LAUNCHER="$APP_DIR/Local YT-DLP.command"
-cat > "$LAUNCHER" <<EOF
-#!/bin/bash
-exec "$ROOT/scripts/run.sh" "\$@"
+rm -rf "$APP_BUNDLE"
+mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
+if [ -f assets/icon.icns ]; then
+  cp assets/icon.icns "$APP_BUNDLE/Contents/Resources/icon.icns"
+fi
+
+cat > "$APP_BUNDLE/Contents/Info.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>Local YT-DLP</string>
+  <key>CFBundleDisplayName</key>
+  <string>Local YT-DLP</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.localytdlp.app</string>
+  <key>CFBundleVersion</key>
+  <string>1.0.0</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleExecutable</key>
+  <string>launcher</string>
+  <key>CFBundleIconFile</key>
+  <string>icon.icns</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.15</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+</dict>
+</plist>
 EOF
-chmod +x "$LAUNCHER"
+
+cat > "$APP_BUNDLE/Contents/MacOS/launcher" <<EOF
+#!/bin/bash
+exec "$ROOT/backend/.venv/bin/python" "$ROOT/scripts/launch.py" "\$@"
+EOF
+chmod +x "$APP_BUNDLE/Contents/MacOS/launcher"
 
 say "Instalación completada"
 echo "Abre «Local YT-DLP» desde tu carpeta Aplicaciones o ejecuta:"
-echo "  $ROOT/scripts/run.sh"
+echo "  open \"$APP_BUNDLE\""
 echo
-echo "La primera vez, macOS puede pedir permiso para abrir el lanzador:"
-echo "haz clic derecho sobre «Local YT-DLP.command» y elige «Abrir»."
+echo "La primera vez, macOS puede pedir permiso para abrir la aplicación:"
+echo "haz clic derecho sobre «Local YT-DLP» y elige «Abrir»."

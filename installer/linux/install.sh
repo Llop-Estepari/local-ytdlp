@@ -18,9 +18,17 @@ PY_VERSION="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
 python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' \
   || fail "Se requiere Python 3.10 o superior (detectado $PY_VERSION)."
 
+# pywebview uses the system WebKitGTK through PyGObject, which lives in the
+# system Python. The virtual environment must be able to see system packages.
+VENV_CFG="backend/.venv/pyvenv.cfg"
+if [ -d backend/.venv ] && ! grep -q 'include-system-site-packages = true' "$VENV_CFG" 2>/dev/null; then
+  say "Recreando el entorno virtual para acceder a WebKitGTK del sistema…"
+  rm -rf backend/.venv
+fi
+
 if [ ! -d backend/.venv ]; then
   say "Creando entorno virtual de Python…"
-  python3 -m venv backend/.venv \
+  python3 -m venv --system-site-packages backend/.venv \
     || fail "No se pudo crear el entorno virtual. En Debian/Ubuntu instala python3-venv."
 fi
 
@@ -40,7 +48,7 @@ if [ "$NODE_MAJOR" -lt 20 ]; then
   fail "Se requiere Node.js 20 o superior (detectado $(node --version))."
 fi
 
-say "Compilando la interfaz web…"
+say "Compilando la interfaz…"
 cd frontend
 if [ -f package-lock.json ]; then
   npm ci --no-audit --no-fund
@@ -67,6 +75,25 @@ else
   printf 'FFmpeg detectado: %s\n' "$(ffmpeg -version 2>/dev/null | head -n 1)"
 fi
 
+# --- Ventana nativa (WebKitGTK) --------------------------------------------
+if "$VENV_PYTHON" -c 'import gi; gi.require_version("WebKit2", "4.1")' >/dev/null 2>&1; then
+  printf 'WebKitGTK detectado (ventana nativa disponible).\n'
+else
+  cat <<'EOF'
+
+Aviso: no se detectó WebKitGTK 4.1. La ventana nativa no estará disponible y la
+aplicación se abrirá en el navegador. Para habilitarla instala:
+
+  Debian / Ubuntu:  sudo apt install python3-gi gir1.2-webkit2-4.1
+  Fedora:           sudo dnf install python3-gobject webkit2gtk4.1
+  Arch Linux:       sudo pacman -S python-gobject webkit2gtk-4.1
+  openSUSE:         sudo zypper install python3-gobject typelib-1_0-WebKit2-4_1
+
+Después vuelve a ejecutar este instalador.
+
+EOF
+fi
+
 printf 'yt-dlp detectado: %s\n' "$("$VENV_PYTHON" -m yt_dlp --version 2>/dev/null || echo 'no disponible')"
 
 # --- Lanzador ---------------------------------------------------------------
@@ -84,7 +111,7 @@ Name=Local YT-DLP
 Comment=Descarga contenido multimedia con yt-dlp
 Exec="$ROOT/scripts/run.sh"
 Path=$ROOT
-Icon=$ROOT/frontend/app/icon.svg
+Icon=$ROOT/assets/icon.png
 Terminal=false
 Categories=AudioVideo;Network;
 StartupNotify=true

@@ -3,27 +3,27 @@
 ## Visión general
 
 ```
-┌──────────────────────────────┐        ┌──────────────────────────────────┐
-│  Navegador (localhost)       │        │  FastAPI (127.0.0.1:8765)        │
-│                              │        │                                  │
-│  Next.js (export estático)   │  REST  │  /api/*        rutas y modelos   │
-│  React + TypeScript          │◄──────►│  /ws/downloads WebSocket         │
-│  Tailwind + shadcn/ui        │        │                                  │
-└──────────────────────────────┘        │  DownloadManager                 │
-                                        │    ├─ YtDlpService               │
-                                        │    ├─ FileSystemService          │
-                                        │    ├─ ToolsService               │
-                                        │    └─ UpdateChecker              │
-                                        └──────────────┬───────────────────┘
-                                                       │ subprocess (sin shell)
-                                                       ▼
-                                        ┌──────────────────────────────────┐
-                                        │  yt-dlp  ──►  FFmpeg             │
-                                        │  (proceso aislado por descarga)  │
-                                        └──────────────────────────────────┘
+┌─────────────────────────────────────┐        ┌──────────────────────────────────┐
+│  Ventana nativa (pywebview)         │        │  FastAPI (127.0.0.1:8765)        │
+│  WebKitGTK / WebView2 / WKWebView   │        │                                  │
+│                                     │  REST  │  /api/*        rutas y modelos   │
+│  Next.js (export estático)          │◄──────►│  /ws/downloads WebSocket         │
+│  React + TypeScript                 │        │                                  │
+│  Tailwind + shadcn/ui               │        │  DownloadManager                 │
+└─────────────────────────────────────┘        │    ├─ YtDlpService               │
+                                               │    ├─ FileSystemService          │
+                                               │    ├─ ToolsService               │
+                                               │    └─ UpdateChecker              │
+                                               └──────────────┬───────────────────┘
+                                                              │ subprocess (sin shell)
+                                                              ▼
+                                               ┌──────────────────────────────────┐
+                                               │  yt-dlp  ──►  FFmpeg             │
+                                               │  (proceso aislado por descarga)  │
+                                               └──────────────────────────────────┘
 ```
 
-En producción, FastAPI sirve `frontend/out` en el mismo origen que la API. Esto elimina CORS en el uso normal y simplifica la validación de origen. En desarrollo, Next.js corre en `:3000` y la API en `:8765`.
+En la aplicación de escritorio, `app/desktop.py` inicia uvicorn en un hilo y abre una ventana nativa que carga `http://127.0.0.1:8765`. FastAPI sirve `frontend/out` en el mismo origen que la API, así que no hay CORS y se mantienen las validaciones de origen y token. En desarrollo, Next.js corre en `:3000` y la API en `:8765`; el modo `--browser` conserva el comportamiento de navegador.
 
 ## Estructura del repositorio
 
@@ -31,7 +31,8 @@ En producción, FastAPI sirve `frontend/out` en el mismo origen que la API. Esto
 backend/
   app/
     main.py            Punto de entrada ASGI
-    __main__.py        python -m app
+    __main__.py        python -m app (ventana, navegador o solo servidor)
+    desktop.py         Ventana nativa, servidor en segundo plano y fallback
     factory.py         Creación de la app, middleware, estáticos, errores
     api/routes.py      Endpoints REST y WebSocket
     core/
@@ -52,6 +53,7 @@ backend/
       updates.py       Comprobación de versiones publicadas
       ytdlp.py         Comandos de análisis y descarga
   tests/               Unitarias + integración real
+assets/                Iconos de la aplicación (PNG, ICO e ICNS)
 frontend/
   app/                 Layout, página, estilos y metadatos
   components/          Pantalla única y estados progresivos
@@ -89,6 +91,15 @@ Todas las descargas (un vídeo/audio suelto, una canción de una lista o una lis
 - Cancelar detiene la descarga activa; la siguiente de la cola comienza automáticamente.
 - El icono de cola de la cabecera (a la izquierda del tema) muestra el número total de canciones. `QueueDialog` permite ver la activa y las pendientes, quitar canciones y vaciar la cola con confirmación; vaciar cancela también la descarga activa.
 - El logo de la cabecera vuelve al inicio sin detener la cola; se puede pegar otro enlace mientras el toast sigue activo.
+
+## Modo escritorio
+
+- `scripts/launch.py` carga `Settings`, comprueba que `frontend/out/index.html` exista y llama a `app.desktop.run_desktop`.
+- `run_desktop` reutiliza una instancia ya en ejecución (`GET /api/health`); si no la hay, inicia uvicorn en un hilo daemon y espera a que `server.started` sea verdadero.
+- `pywebview` crea una ventana nativa con `private_mode=False` y `storage_path=<DATA_DIR>/webview`, de modo que el tema y las preferencias persisten entre sesiones.
+- Al cerrar la ventana, el hilo del servidor recibe `should_exit`, se ejecuta el apagado ordenado de `DownloadManager` y se eliminan los temporales.
+- Si `pywebview` no está instalado, falla la WebView del sistema o el usuario pasa `--browser`, se sirve la misma interfaz y se abre el navegador por defecto.
+- `python -m app --server` permite ejecutar solo el servicio HTTP para depuración o despliegues headless.
 
 ## Selección de formatos
 
@@ -183,7 +194,7 @@ Todas las descargas usan `--ignore-config`, `--windows-filenames`, `--trim-filen
 - Se admiten listas de reproducción públicas; no se admite contenido privado ni que requiera inicio de sesión.
 - La vista previa de una lista se limita a 50 elementos y los formatos se detectan con una muestra de hasta 3 elementos; el resto se procesa igual durante la descarga.
 - La interfaz admite español e inglés y detecta el idioma del sistema; no hay selector manual.
-- La cola de canciones vive en el navegador con concurrencia 1 y no se conserva al recargar la página.
+- La cola de canciones vive en la interfaz con concurrencia 1 y no se conserva al cerrar la aplicación.
 - No se usa una base de datos: el estado vive en memoria y los archivos en disco.
 - Las descargas simultáneas están aisladas por id y carpeta temporal.
 - El historial no se conserva al cerrar el servicio.

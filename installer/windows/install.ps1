@@ -70,7 +70,7 @@ if ($NodeMajor -lt 20) {
     Fail "Se requiere Node.js 20 o superior (detectado $(& node --version))."
 }
 
-Write-Step "Compilando la interfaz web…"
+Write-Step "Compilando la interfaz…"
 Push-Location (Join-Path $Root "frontend")
 try {
     if (Test-Path "package-lock.json") {
@@ -102,6 +102,27 @@ if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
     Write-Host "FFmpeg detectado."
 }
 
+# --- Ventana nativa (WebView2) ---------------------------------------------
+$WebView2Keys = @(
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+    "HKLM:\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+    "HKCU:\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+)
+$HasWebView2 = $false
+foreach ($Key in $WebView2Keys) {
+    if (Test-Path $Key) {
+        $HasWebView2 = $true
+        break
+    }
+}
+if (-not $HasWebView2) {
+    Write-Host ""
+    Write-Host "Aviso: no se detectó Microsoft Edge WebView2." -ForegroundColor Yellow
+    Write-Host "La ventana nativa lo necesita. Instálalo desde:"
+    Write-Host "  https://developer.microsoft.com/microsoft-edge/webview2/"
+    Write-Host "Si no está disponible, la aplicación se abrirá en el navegador."
+}
+
 # --- Lanzador ---------------------------------------------------------------
 $StartBat = Join-Path $Root "Start Local YT-DLP.bat"
 @"
@@ -109,14 +130,26 @@ $StartBat = Join-Path $Root "Start Local YT-DLP.bat"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run.ps1"
 "@ | Set-Content -Path $StartBat -Encoding ASCII
 
+$VenvPythonw = Join-Path $Root "backend\.venv\Scripts\pythonw.exe"
 try {
     $Desktop = [Environment]::GetFolderPath("Desktop")
     if ($Desktop) {
         $Shell = New-Object -ComObject WScript.Shell
         $Shortcut = $Shell.CreateShortcut((Join-Path $Desktop "Local YT-DLP.lnk"))
-        $Shortcut.TargetPath = $StartBat
+        if (Test-Path $VenvPythonw) {
+            $Shortcut.TargetPath = $VenvPythonw
+            $Shortcut.Arguments = '"' + (Join-Path $Root "scripts\launch.py") + '"'
+            $Shortcut.WindowStyle = 7
+        } else {
+            $Shortcut.TargetPath = $StartBat
+        }
         $Shortcut.WorkingDirectory = $Root
-        $Shortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,137"
+        $IconPath = Join-Path $Root "assets\icon.ico"
+        if (Test-Path $IconPath) {
+            $Shortcut.IconLocation = $IconPath
+        } else {
+            $Shortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,137"
+        }
         $Shortcut.Description = "Local YT-DLP Downloader"
         $Shortcut.Save()
     }
@@ -125,7 +158,8 @@ try {
 }
 
 Write-Step "Instalación completada"
-Write-Host "Inicia la aplicación con el acceso directo «Local YT-DLP» o ejecutando:"
+Write-Host "Inicia la aplicación con el acceso directo «Local YT-DLP» del escritorio."
+Write-Host "Para ver la consola de diagnóstico ejecuta:"
 Write-Host "  $StartBat"
 Write-Host ""
 Write-Host "Si FFmpeg se acaba de instalar, cierra y vuelve a abrir la aplicación."

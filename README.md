@@ -1,11 +1,12 @@
 # Local YT-DLP Downloader
 
-Aplicación web local para descargar contenido multimedia con **yt-dlp** y **FFmpeg** ejecutados en tu propio ordenador. No hay servidores remotos: el vídeo o el audio nunca salen de tu equipo.
+Aplicación de escritorio local para descargar contenido multimedia con **yt-dlp** y **FFmpeg** ejecutados en tu propio ordenador. No hay servidores remotos: el vídeo o el audio nunca salen de tu equipo.
 
-Una sola pantalla, una sola tarea: pegar una URL, elegir formato y calidad, descargar.
+La interfaz se muestra en una ventana nativa (WebKitGTK en Linux, WebView2 en Windows y WKWebView en macOS); no hace falta abrir el navegador. Una sola pantalla, una sola tarea: pegar una URL, elegir formato y calidad, descargar.
 
 ## Características
 
+- Ventana de escritorio nativa en Linux, Windows y macOS, sin navegador.
 - Análisis real de la URL con yt-dlp y detección de título, miniatura, duración y plataforma.
 - Listas de reproducción: título, número de elementos y vista previa de las canciones antes de descargar.
 - Descarga completa de listas: añade todas las canciones a la cola con el formato y la calidad elegidos.
@@ -26,17 +27,27 @@ Una sola pantalla, una sola tarea: pegar una URL, elegir formato y calidad, desc
 - Interfaz minimalista, modo oscuro por defecto y modo claro opcional.
 - Comprobación de versiones y actualizaciones de yt-dlp y FFmpeg.
 - Seguridad local: token de sesión, validación de Host/Origin, CSP, protección CSRF y DNS rebinding.
+- Modo navegador opcional con `--browser` para equipos sin WebView disponible.
 
 ## Requisitos
 
 | Componente | Versión | Uso |
 | --- | --- | --- |
-| Python | 3.10 o superior | Backend FastAPI |
+| Python | 3.10 o superior | Backend FastAPI y ventana nativa |
 | Node.js + npm | 20 o superior | Compilar la interfaz |
 | FFmpeg | Versión reciente | Combinar pistas y convertir audio |
 | yt-dlp | Se instala en el entorno virtual | Análisis y descargas |
+| pywebview | Se instala en el entorno virtual | Ventana de escritorio |
 
-El instalador comprueba estas dependencias, crea el entorno de Python, instala yt-dlp y compila el frontend.
+La ventana nativa usa componentes del sistema:
+
+| Sistema | Componente | Instalación |
+| --- | --- | --- |
+| Linux | PyGObject + WebKitGTK 4.1 | `sudo apt install python3-gi gir1.2-webkit2-4.1` |
+| Windows | Microsoft Edge WebView2 | <https://developer.microsoft.com/microsoft-edge/webview2/> |
+| macOS | WKWebView (incluido en el sistema) | No requiere instalación |
+
+El instalador comprueba estas dependencias, crea el entorno de Python, instala yt-dlp y pywebview, y compila el frontend.
 
 ## Instalación
 
@@ -50,6 +61,8 @@ cd local-yt-dlp
 
 El instalador crea un lanzador en el menú de aplicaciones y el comando `local-ytdlp`.
 
+Si falta WebKitGTK, instálalo con el comando que indique el instalador y vuelve a ejecutarlo. Sin WebKitGTK la aplicación sigue funcionando, pero se abre en el navegador.
+
 ### macOS
 
 ```bash
@@ -57,7 +70,7 @@ cd local-yt-dlp
 ./installer/macos/install.sh
 ```
 
-Crea `~/Applications/Local YT-DLP.command`. Si macOS bloquea la primera apertura, haz clic derecho sobre el archivo y elige **Abrir**.
+Crea la aplicación `~/Applications/Local YT-DLP.app`. Si macOS bloquea la primera apertura, haz clic derecho sobre ella y elige **Abrir**.
 
 ### Windows
 
@@ -66,11 +79,11 @@ cd local-yt-dlp
 .\installer\windows\install.ps1
 ```
 
-También puedes hacer doble clic en `installer\windows\install.bat`. El instalador crea el acceso directo **Local YT-DLP** en el escritorio.
+También puedes hacer doble clic en `installer\windows\install.bat`. El instalador crea el acceso directo **Local YT-DLP** en el escritorio, que abre la ventana sin consola.
 
 ## Uso
 
-1. Abre la aplicación (se abre el navegador automáticamente en `http://127.0.0.1:8765`).
+1. Abre la aplicación desde el menú de aplicaciones, Launchpad o el acceso directo del escritorio.
 2. Pega la URL de un vídeo, audio o lista de reproducción.
 3. Pulsa **Analizar**.
    - Si es un vídeo o audio individual, se abre el diálogo de formato y calidad; al confirmar, la descarga se añade a la cola.
@@ -85,7 +98,21 @@ Si pegas un enlace de vídeo que incluye el parámetro `list=` de YouTube, se an
 
 ### Idioma
 
-La interfaz detecta el idioma del sistema al abrirla: usa español si el navegador está configurado en español y, para cualquier otro idioma, usa inglés. No hace falta configurar nada; el atributo `lang` del documento se actualiza automáticamente.
+La interfaz detecta el idioma del sistema al abrirla: usa español si el idioma preferido es español y, para cualquier otro idioma, usa inglés. No hace falta configurar nada; el atributo `lang` del documento se actualiza automáticamente.
+
+### Modo navegador
+
+Si la ventana nativa no está disponible o prefieres usar el navegador:
+
+```bash
+./scripts/run.sh --browser
+```
+
+En Windows:
+
+```powershell
+.\run.ps1 --browser
+```
 
 ### Lanzadores manuales
 
@@ -96,6 +123,8 @@ La interfaz detecta el idioma del sistema al abrirla: usa español si el navegad
 | Windows (PowerShell) | `.\run.ps1` |
 | Windows (doble clic) | `Start Local YT-DLP.bat` |
 
+Todos abren la ventana nativa. Añade `--browser` para abrir la interfaz en el navegador y `--debug` para mostrar las herramientas de desarrollo de la ventana.
+
 ## Desarrollo
 
 Requisitos: Python 3.10+, Node.js 20+ y FFmpeg en el `PATH`.
@@ -103,7 +132,7 @@ Requisitos: Python 3.10+, Node.js 20+ y FFmpeg en el `PATH`.
 ```bash
 # Backend
 cd backend
-python3 -m venv .venv
+python3 -m venv --system-site-packages .venv
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/pytest -q
 
@@ -114,6 +143,13 @@ npm run dev        # http://127.0.0.1:3000
 
 # O ambos a la vez, desde la raíz
 ./scripts/dev.sh
+```
+
+El modo desarrollo sigue usando el navegador y el servidor de Next.js. Para probar la ventana nativa con el frontend compilado:
+
+```bash
+cd frontend && npm run build && cd ..
+./scripts/run.sh --debug
 ```
 
 Pruebas de integración reales (usan la red y descargan contenido):
@@ -136,7 +172,7 @@ El backend sirve `frontend/out` en un único origen. En desarrollo, Next.js usa 
 
 ## Seguridad
 
-- El servicio escucha en `127.0.0.1` por defecto.
+- El servicio escucha en `127.0.0.1` por defecto, también en modo escritorio.
 - La API exige el token local en la cabecera `X-API-Token`. El token se obtiene en `GET /api/session`, solo para clientes loopback.
 - Se validan `Host`, `Origin` y `Sec-Fetch-Site`; se aplica CSP y cabeceras de seguridad.
 - Las carpetas de destino están limitadas a Descargas, Vídeos, Música y Escritorio (más `LOCAL_YTDLP_ALLOWED_ROOTS`). Se resuelven symlinks y se rechazan escapes.
@@ -151,7 +187,7 @@ Desactivado por defecto. Para habilitarlo de forma explícita:
 ```bash
 export LOCAL_YTDLP_ALLOW_NETWORK=1
 export LOCAL_YTDLP_TOKEN="un-token-largo-y-aleatorio-de-32-caracteres"
-./scripts/run.sh
+./scripts/run.sh --browser
 ```
 
 Abre en el otro dispositivo `http://IP-DEL-EQUIPO:8765/#token=TU_TOKEN`. El token se guarda en `sessionStorage` y se elimina de la barra de direcciones. No expongas el puerto a Internet.
@@ -162,7 +198,7 @@ Abre en el otro dispositivo `http://IP-DEL-EQUIPO:8765/#token=TU_TOKEN`. El toke
 | --- | --- | --- |
 | `LOCAL_YTDLP_HOST` | `127.0.0.1` | Interfaz de escucha |
 | `LOCAL_YTDLP_PORT` | `8765` | Puerto local |
-| `LOCAL_YTDLP_DATA_DIR` | Directorio de estado del sistema | Token, logs y temporales |
+| `LOCAL_YTDLP_DATA_DIR` | Directorio de estado del sistema | Token, logs, temporales y almacenamiento de la ventana |
 | `LOCAL_YTDLP_ALLOWED_ROOTS` | Descargas, Vídeos, Música, Escritorio | Carpetas de destino permitidas, separadas por `:` (`;` en Windows) |
 | `LOCAL_YTDLP_TOKEN` | Generado y guardado | Token local (mínimo 24 caracteres) |
 | `LOCAL_YTDLP_ALLOW_NETWORK` | `0` | Habilita el modo red |
@@ -172,13 +208,14 @@ Abre en el otro dispositivo `http://IP-DEL-EQUIPO:8765/#token=TU_TOKEN`. El toke
 | `LOCAL_YTDLP_YTDLP_PATH` | Autodetectado | Ruta a un ejecutable de yt-dlp |
 | `LOCAL_YTDLP_FFMPEG_PATH` | Autodetectado | Ruta a un ejecutable de FFmpeg |
 
-Los logs se guardan en `<DATA_DIR>/logs/app.log`.
+Los logs se guardan en `<DATA_DIR>/logs/app.log`. El estado persistente de la ventana (tema e idioma) se guarda en `<DATA_DIR>/webview`.
 
 ## Estructura
 
 ```
-backend/            FastAPI, servicios, seguridad y pruebas
+backend/            FastAPI, servicios, seguridad, ventana nativa y pruebas
 frontend/           Next.js, React, TypeScript y Tailwind
+assets/             Iconos de la aplicación (PNG, ICO e ICNS)
 scripts/            Lanzadores y desarrollo
 installer/          Instaladores de Linux, macOS y Windows
 docs/               API, arquitectura e instalación
