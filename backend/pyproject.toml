@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+markers = [
+    "integration: tests that use the network or real yt-dlp downloads",
+]

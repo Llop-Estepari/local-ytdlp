@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+backend/.venv/
+backend/.coverage
+htmlcov/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/next-env.d.ts
+*.tsbuildinfo
+
+# Entornos y secretos
+.env
+.env.*
+!.env.example
+
+# Datos locales y logs
+*.log
+logs/
+data/
+tmp/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
