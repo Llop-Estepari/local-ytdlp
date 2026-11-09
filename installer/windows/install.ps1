@@ -11,7 +11,9 @@ function Write-Step($Message) {
 function Fail($Message) {
     Write-Host ""
     Write-Host "Error: $Message" -ForegroundColor Red
-    Read-Host "Pulsa Enter para cerrar"
+    if (-not $env:LOCAL_YTDLP_NO_PAUSE) {
+        Read-Host "Pulsa Enter para cerrar"
+    }
     exit 1
 }
 
@@ -199,4 +201,6 @@ Write-Host "Para ver la consola de diagnóstico ejecuta:"
 Write-Host "  $StartBat"
 Write-Host ""
 Write-Host "Si FFmpeg se acaba de instalar, cierra y vuelve a abrir la aplicación."
-Read-Host "Pulsa Enter para cerrar"
+if (-not $env:LOCAL_YTDLP_NO_PAUSE) {
+    Read-Host "Pulsa Enter para cerrar"
+}

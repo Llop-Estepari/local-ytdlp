@@ -50,7 +50,57 @@ La ventana nativa usa componentes del sistema:
 
 El instalador instala automáticamente Python, FFmpeg y la WebView del sistema cuando faltan. Puede pedir la contraseña de administrador (Linux/macOS) o permisos de winget (Windows).
 
-## Instalación
+## Instalación con un solo comando
+
+El instalador descarga o actualiza la aplicación, coloca el proyecto en una carpeta estándar y ejecuta el instalador de la plataforma. Puede pedir la contraseña de administrador para instalar dependencias del sistema.
+
+### Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | bash
+```
+
+### macOS
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | bash
+```
+
+### Windows
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex"
+```
+
+Si no tienes `curl` en Linux, puedes usar `wget`:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | bash
+```
+
+### Carpeta de instalación
+
+| Sistema | Ruta por defecto |
+| --- | --- |
+| Linux | `~/.local/share/local-ytdlp` |
+| macOS | `~/Library/Application Support/local-ytdlp` |
+| Windows | `%LOCALAPPDATA%\LocalYTDLP\app` |
+
+Para usar otra carpeta en Linux o macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | LOCAL_YTDLP_INSTALL_DIR="$HOME/apps/local-ytdlp" bash
+```
+
+En Windows:
+
+```powershell
+$env:LOCAL_YTDLP_INSTALL_DIR="$env:USERPROFILE\apps\local-ytdlp"; irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex
+```
+
+## Instalación manual
+
+Si prefieres descargar el repositorio y ejecutar el instalador tú mismo:
 
 ### Linux
 
@@ -217,6 +267,8 @@ Los logs se guardan en `<DATA_DIR>/logs/app.log`. El estado persistente de la ve
 ## Estructura
 
 ```
+install.sh          Instalador de un solo comando para Linux y macOS
+install.ps1         Instalador de un solo comando para Windows
 backend/            FastAPI, servicios, seguridad, ventana nativa y pruebas
 frontend/           Next.js, React, TypeScript y Tailwind
 frontend/out/       Interfaz compilada versionada (no requiere Node.js al instalar)

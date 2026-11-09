@@ -28,6 +28,8 @@ En la aplicación de escritorio, `app/desktop.py` inicia uvicorn en un hilo y ab
 ## Estructura del repositorio
 
 ```
+install.sh             Instalador de un solo comando (Linux/macOS)
+install.ps1            Instalador de un solo comando (Windows)
 backend/
   app/
     main.py            Punto de entrada ASGI

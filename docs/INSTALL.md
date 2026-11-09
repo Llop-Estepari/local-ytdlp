@@ -16,6 +16,54 @@ Los instaladores intentan instalar automáticamente Python, FFmpeg y la WebView 
 
 yt-dlp y pywebview se instalan dentro de `backend/.venv`, por lo que no es necesario instalarlos globalmente.
 
+## Instalación con un solo comando
+
+El instalador descarga o actualiza el proyecto en una carpeta estándar y ejecuta el instalador de la plataforma.
+
+### Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | bash
+```
+
+### macOS
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | bash
+```
+
+### Windows
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex"
+```
+
+Si no tienes `curl` en Linux:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | bash
+```
+
+Carpetas por defecto:
+
+| Sistema | Ruta |
+| --- | --- |
+| Linux | `~/.local/share/local-ytdlp` |
+| macOS | `~/Library/Application Support/local-ytdlp` |
+| Windows | `%LOCALAPPDATA%\LocalYTDLP\app` |
+
+Para cambiar la carpeta en Linux o macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | LOCAL_YTDLP_INSTALL_DIR="$HOME/apps/local-ytdlp" bash
+```
+
+En Windows:
+
+```powershell
+$env:LOCAL_YTDLP_INSTALL_DIR="$env:USERPROFILE\apps\local-ytdlp"; irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex
+```
+
 ## Instalación manual
 
 ```bash
