@@ -22,6 +22,7 @@ import urllib.error
 import urllib.request
 import webbrowser
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from .core.config import Settings
@@ -183,12 +184,35 @@ def _select_gui() -> str | None:
     return "gtk"
 
 
+def window_icon(settings: Settings) -> Path | None:
+    """Return an icon in a format the native toolkit can actually load.
+
+    pywebview 6 added icon support to its Windows backend, which uses
+    ``System.Drawing.Icon`` and therefore requires a real ``.ico`` file. Passing
+    the PNG made the WinForms window fail during creation and the application
+    silently exited. GTK needs a PNG, while Cocoa accepts the ICNS bundle.
+    """
+
+    assets = settings.project_root / "assets"
+    if sys.platform == "win32":
+        candidates = (assets / "icon.ico",)
+    elif sys.platform == "darwin":
+        candidates = (assets / "icon.icns", assets / "icon.png")
+    else:
+        candidates = (assets / "icon.png",)
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _open_native_window(settings: Settings, url: str, debug: bool) -> None:
     import webview
 
     storage = settings.app_data_dir / "webview"
     storage.mkdir(parents=True, exist_ok=True)
-    icon = settings.project_root / "assets" / "icon.png"
+    icon = window_icon(settings)
 
     webview.create_window(
         WINDOW_TITLE,
@@ -204,7 +228,7 @@ def _open_native_window(settings: Settings, url: str, debug: bool) -> None:
         debug=debug,
         private_mode=False,
         storage_path=str(storage),
-        icon=str(icon) if icon.is_file() else None,
+        icon=str(icon) if icon is not None else None,
     )
 
 

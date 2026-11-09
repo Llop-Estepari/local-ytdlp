@@ -5,11 +5,13 @@ from __future__ import annotations
 import json
 import socket
 import threading
+from dataclasses import replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from app import desktop
 from app.core.config import Settings
-from app.desktop import frontend_ready, is_running, port_is_free, run_desktop
+from app.desktop import frontend_ready, is_running, port_is_free, run_desktop, window_icon
 
 
 class _HealthHandler(BaseHTTPRequestHandler):
@@ -68,3 +70,31 @@ def test_run_desktop_requires_built_frontend(tmp_path: Path, capsys) -> None:
     settings = Settings.for_testing(tmp_path)
     assert run_desktop(settings) == 1
     assert "frontend no está compilado" in capsys.readouterr().err
+
+
+def test_window_icon_uses_ico_on_windows(tmp_path: Path, monkeypatch) -> None:
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    (assets / "icon.ico").write_bytes(b"ico")
+    (assets / "icon.png").write_bytes(b"png")
+    settings = replace(Settings.for_testing(tmp_path), project_root=tmp_path)
+
+    monkeypatch.setattr(desktop.sys, "platform", "win32")
+    assert window_icon(settings) == assets / "icon.ico"
+
+
+def test_window_icon_uses_png_on_linux(tmp_path: Path, monkeypatch) -> None:
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    (assets / "icon.png").write_bytes(b"png")
+    settings = replace(Settings.for_testing(tmp_path), project_root=tmp_path)
+
+    monkeypatch.setattr(desktop.sys, "platform", "linux")
+    assert window_icon(settings) == assets / "icon.png"
+
+
+def test_window_icon_ignores_missing_files(tmp_path: Path, monkeypatch) -> None:
+    settings = replace(Settings.for_testing(tmp_path), project_root=tmp_path)
+
+    monkeypatch.setattr(desktop.sys, "platform", "win32")
+    assert window_icon(settings) is None
