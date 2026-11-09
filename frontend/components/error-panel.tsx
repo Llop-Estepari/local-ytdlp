@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, RotateCcw } from "lucide-react";
+import { BadgeAlertIcon, RotateCcwIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export function ErrorPanel({
   return (
     <div className="animate-fade-up space-y-6">
       <div className="flex h-11 w-11 items-center justify-center rounded-full border border-destructive/25 text-destructive">
-        <AlertCircle className="h-5 w-5" strokeWidth={1.8} />
+        <BadgeAlertIcon size={20} />
       </div>
 
       <div className="space-y-1.5">
@@ -46,7 +46,7 @@ export function ErrorPanel({
 
       <div className="space-y-2">
         <Button type="button" className="w-full" onClick={onRetry}>
-          <RotateCcw className="h-4 w-4" strokeWidth={1.8} />
+          <RotateCcwIcon size={16} />
           {retryText}
         </Button>
         {onReset ? (

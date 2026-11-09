@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowUp, Folder, FolderPlus, Loader2 } from "lucide-react";
+import { ArrowUpIcon, FolderOpenIcon, FolderPlusIcon } from "lucide-animated";
 
 import { Button } from "@/components/ui/button";
+import { LoadingIcon } from "@/components/ui/loading-icon";
 import {
   Dialog,
   DialogClose,
@@ -133,9 +134,9 @@ export function FolderDialog({
           ) : null}
 
           <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
-            <Folder
-              className="h-4 w-4 shrink-0 text-muted-foreground"
-              strokeWidth={1.7}
+            <FolderOpenIcon
+              size={16}
+              className="shrink-0 text-muted-foreground"
             />
             <span
               className="truncate text-xs text-muted-foreground"
@@ -148,10 +149,7 @@ export function FolderDialog({
           <div className="h-64 overflow-y-auto rounded-lg border">
             {loading ? (
               <div className="flex h-full items-center justify-center">
-                <Loader2
-                  className="h-4 w-4 animate-spin text-muted-foreground"
-                  strokeWidth={1.8}
-                />
+                <LoadingIcon size={16} className="text-muted-foreground" />
               </div>
             ) : (
               <div className="p-1">
@@ -163,7 +161,7 @@ export function FolderDialog({
                     }}
                     className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
-                    <ArrowUp className="h-4 w-4" strokeWidth={1.7} />
+                    <ArrowUpIcon size={16} />
                     <span>{t("folder.parent")}</span>
                   </button>
                 ) : null}
@@ -177,9 +175,9 @@ export function FolderDialog({
                     }}
                     className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent"
                   >
-                    <Folder
-                      className="h-4 w-4 shrink-0 text-muted-foreground"
-                      strokeWidth={1.7}
+                    <FolderOpenIcon
+                      size={16}
+                      className="shrink-0 text-muted-foreground"
                     />
                     <span className="truncate">{directory.name}</span>
                   </button>
@@ -215,11 +213,7 @@ export function FolderDialog({
                 size="sm"
                 disabled={!newName.trim() || creatingBusy}
               >
-                {creatingBusy ? (
-                  <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-                ) : (
-                  t("folder.create")
-                )}
+                {creatingBusy ? <LoadingIcon size={16} /> : t("folder.create")}
               </Button>
             </form>
           ) : null}
@@ -238,7 +232,7 @@ export function FolderDialog({
             size="sm"
             onClick={() => setCreating((value) => !value)}
           >
-            <FolderPlus className="h-4 w-4" strokeWidth={1.8} />
+            <FolderPlusIcon size={16} />
             {t("folder.new")}
           </Button>
           <div className="flex gap-2">

@@ -12,6 +12,7 @@ La interfaz se muestra en una ventana nativa en Linux, Windows y macOS. También
 - Cola de descargas con progreso en tiempo real, cancelación y descarga de listas completas.
 - Selección de carpeta de destino con ubicaciones permitidas.
 - Interfaz en español e inglés, modo oscuro y modo claro.
+- Iconos animados y marca SVG que se adapta al tema.
 - Comprobación de versiones de yt-dlp y FFmpeg.
 
 ## Instalación con un solo comando

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCwIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { api } from "@/lib/api";
@@ -81,9 +81,10 @@ export function DependencyFooter({ dependencies }: DependencyFooterProps) {
         disabled={checking}
         className="inline-flex items-center gap-1 transition-colors hover:text-foreground disabled:opacity-50"
       >
-        <RefreshCw
-          className={cn("h-3 w-3", checking && "animate-spin")}
-          strokeWidth={1.8}
+        <RefreshCwIcon
+          size={12}
+          animateOnHover={!checking}
+          className={cn("inline-flex", checking && "animate-spin")}
         />
         {t("footer.check")}
       </button>

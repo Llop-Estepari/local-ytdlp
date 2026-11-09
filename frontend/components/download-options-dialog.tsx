@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Folder } from "lucide-react";
+import { FolderOpenIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
@@ -138,9 +138,9 @@ export function DownloadOptionsDialog({
         </div>
 
         <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-          <Folder
-            className="h-4 w-4 shrink-0 text-muted-foreground"
-            strokeWidth={1.7}
+          <FolderOpenIcon
+            size={16}
+            className="shrink-0 text-muted-foreground"
           />
           <span className="shrink-0 text-muted-foreground">
             {t("common.saveIn")}

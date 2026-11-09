@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
+import { BadgeAlertIcon, DeleteIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
+import { LoadingIcon } from "@/components/ui/loading-icon";
 import {
   Dialog,
   DialogContent,
@@ -63,7 +64,7 @@ export function QueueDialog({
         <DialogContent>
           <DialogHeader>
             <div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full border border-destructive/25 text-destructive">
-              <AlertTriangle className="h-5 w-5" strokeWidth={1.8} />
+              <BadgeAlertIcon size={20} />
             </div>
             <DialogTitle>{t("queue.clearTitle")}</DialogTitle>
             <DialogDescription>
@@ -88,11 +89,7 @@ export function QueueDialog({
               onClick={onClear}
               disabled={clearing}
             >
-              {clearing ? (
-                <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-              ) : (
-                <Trash2 className="h-4 w-4" strokeWidth={1.8} />
-              )}
+              {clearing ? <LoadingIcon size={16} /> : <DeleteIcon size={16} />}
               {clearing ? t("queue.clearing") : t("queue.clearConfirm")}
             </Button>
           </DialogFooter>
@@ -140,12 +137,9 @@ export function QueueDialog({
                     title={t("queue.cancelActive")}
                   >
                     {cancelling ? (
-                      <Loader2
-                        className="h-3.5 w-3.5 animate-spin"
-                        strokeWidth={1.8}
-                      />
+                      <LoadingIcon size={14} />
                     ) : (
-                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.8} />
+                      <DeleteIcon size={14} />
                     )}
                   </Button>
                 </div>
@@ -180,7 +174,7 @@ export function QueueDialog({
                   aria-label={t("queue.remove")}
                   title={t("queue.remove")}
                 >
-                  <Trash2 className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  <DeleteIcon size={14} />
                 </Button>
               </div>
             ))}
@@ -195,7 +189,7 @@ export function QueueDialog({
             onClick={() => setConfirmingClear(true)}
             disabled={total === 0 || clearing}
           >
-            <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+            <DeleteIcon size={16} />
             {t("queue.clear")}
           </Button>
         </DialogFooter>

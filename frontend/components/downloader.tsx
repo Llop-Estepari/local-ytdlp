@@ -1,6 +1,6 @@
 "use client";
 
-import { ListMusic } from "lucide-react";
+import { ListIcon } from "lucide-animated";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -571,7 +571,7 @@ export function Downloader() {
             aria-label={t("queue.open", { count: queueTotal })}
             title={t("queue.title")}
           >
-            <ListMusic className="h-4 w-4" strokeWidth={1.7} />
+            <ListIcon size={16} />
             {queueTotal > 0 ? (
               <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground">
                 {queueTotal > 99 ? "99+" : queueTotal}

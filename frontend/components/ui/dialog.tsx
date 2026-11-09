@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { XIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ const DialogContent = React.forwardRef<
       >
         {children}
         <DialogPrimitive.Close className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground opacity-70 transition-opacity hover:bg-accent hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring/50">
-          <X className="h-4 w-4" strokeWidth={1.7} />
+          <XIcon size={16} />
           <span className="sr-only">{t("common.close")}</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

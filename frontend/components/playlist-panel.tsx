@@ -1,6 +1,11 @@
 "use client";
 
-import { ArrowLeft, ChevronDown, Download, Folder } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ChevronDownIcon,
+  DownloadIcon,
+  FolderOpenIcon,
+} from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
@@ -82,7 +87,7 @@ export function PlaylistPanel({
           title={t("common.changeLink")}
           className="-mr-2 h-8 w-8 shrink-0 text-muted-foreground"
         >
-          <ArrowLeft className="h-4 w-4" strokeWidth={1.7} />
+          <ArrowLeftIcon size={16} />
         </Button>
       </div>
 
@@ -113,7 +118,7 @@ export function PlaylistPanel({
                   aria-label={t("playlist.downloadSong", { title: entry.title })}
                   title={t("playlist.downloadThisSong")}
                 >
-                  <Download className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  <DownloadIcon size={14} />
                 </Button>
               </div>
             );
@@ -169,9 +174,9 @@ export function PlaylistPanel({
         onClick={onChooseDestination}
         className="flex w-full items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent"
       >
-        <Folder
-          className="h-4 w-4 shrink-0 text-muted-foreground"
-          strokeWidth={1.7}
+        <FolderOpenIcon
+          size={16}
+          className="shrink-0 text-muted-foreground"
         />
         <span className="shrink-0 text-muted-foreground">
           {t("common.saveIn")}
@@ -179,9 +184,9 @@ export function PlaylistPanel({
         <span className="truncate text-foreground/90" title={destination}>
           {destination ? shortenPath(destination) : t("common.selectFolder")}
         </span>
-        <ChevronDown
-          className="ml-auto h-4 w-4 shrink-0 text-muted-foreground"
-          strokeWidth={1.7}
+        <ChevronDownIcon
+          size={16}
+          className="ml-auto shrink-0 text-muted-foreground"
         />
       </button>
 

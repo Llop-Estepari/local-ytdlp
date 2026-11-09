@@ -1,9 +1,15 @@
 "use client";
 
-import { AlertCircle, Check, FolderOpen, Loader2, X } from "lucide-react";
+import {
+  BadgeAlertIcon,
+  CheckIcon,
+  FolderOpenIcon,
+  XIcon,
+} from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
+import { LoadingIcon } from "@/components/ui/loading-icon";
 import { Progress } from "@/components/ui/progress";
 import {
   formatBytes,
@@ -105,10 +111,7 @@ function ActiveProgress({
   return (
     <div className="space-y-3">
       <div className="flex items-start gap-3">
-        <Loader2
-          className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-muted-foreground"
-          strokeWidth={1.8}
-        />
+        <LoadingIcon size={16} className="mt-0.5 text-muted-foreground" />
         <div className="min-w-0 flex-1 space-y-0.5">
           <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
             {statusLabel}
@@ -134,9 +137,9 @@ function ActiveProgress({
           title={t("toast.cancelTitle")}
         >
           {active.cancelling ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.8} />
+            <LoadingIcon size={14} />
           ) : (
-            <X className="h-3.5 w-3.5" strokeWidth={1.8} />
+            <XIcon size={14} />
           )}
         </Button>
       </div>
@@ -187,11 +190,11 @@ function ResultMessage({
         }
       >
         {completed ? (
-          <Check className="h-3.5 w-3.5" strokeWidth={2} />
+          <CheckIcon size={14} />
         ) : cancelled ? (
-          <X className="h-3.5 w-3.5" strokeWidth={2} />
+          <XIcon size={14} />
         ) : (
-          <AlertCircle className="h-3.5 w-3.5" strokeWidth={2} />
+          <BadgeAlertIcon size={14} />
         )}
       </span>
       <div className="min-w-0 flex-1 space-y-0.5">
@@ -213,7 +216,7 @@ function ResultMessage({
             className="mt-2 h-7 px-2.5 text-xs"
             onClick={onOpenFolder}
           >
-            <FolderOpen className="h-3 w-3" strokeWidth={1.8} />
+            <FolderOpenIcon size={12} />
             {t("success.openFolder")}
           </Button>
         ) : null}
@@ -227,7 +230,7 @@ function ResultMessage({
         aria-label={t("toast.dismissAria")}
         title={t("toast.closeTitle")}
       >
-        <X className="h-3.5 w-3.5" strokeWidth={1.8} />
+        <XIcon size={14} />
       </Button>
     </div>
   );

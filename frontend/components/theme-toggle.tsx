@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { MoonIcon, SunIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,8 @@ export function ThemeToggle() {
         }
       }}
     >
-      <Sun className="hidden h-4 w-4 dark:block" strokeWidth={1.7} />
-      <Moon className="block h-4 w-4 dark:hidden" strokeWidth={1.7} />
+      <SunIcon size={16} className="hidden dark:inline-flex" />
+      <MoonIcon size={16} className="inline-flex dark:hidden" />
     </Button>
   );
 }

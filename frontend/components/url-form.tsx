@@ -1,9 +1,10 @@
 "use client";
 
-import { Link2, Loader2 } from "lucide-react";
+import { LinkIcon } from "lucide-animated";
 
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/components/i18n-provider";
+import { LoadingIcon } from "@/components/ui/loading-icon";
 
 interface UrlFormProps {
   url: string;
@@ -31,9 +32,9 @@ export function UrlForm({
       }}
     >
       <div className="flex items-center gap-2 rounded-2xl border border-border bg-card/60 p-1.5 pl-4 transition-colors focus-within:border-foreground/20 focus-within:bg-card">
-        <Link2
-          className="h-4 w-4 shrink-0 text-muted-foreground"
-          strokeWidth={1.7}
+        <LinkIcon
+          size={16}
+          className="shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
         <input
@@ -56,9 +57,7 @@ export function UrlForm({
           disabled={analyzing || !url.trim()}
           className="h-10 shrink-0 rounded-xl px-3.5"
         >
-          {analyzing ? (
-            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-          ) : null}
+          {analyzing ? <LoadingIcon size={16} /> : null}
           <span>
             {analyzing ? t("url.analyzing") : t("url.analyze")}
           </span>

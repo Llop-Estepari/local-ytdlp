@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { BadgeAlertIcon } from "lucide-animated";
 
 import { useI18n } from "@/components/i18n-provider";
 import type { DependenciesResponse } from "@/types/api";
@@ -23,9 +23,9 @@ export function DependencyWarning({ dependencies }: DependencyWarningProps) {
 
   return (
     <div className="flex animate-fade-in gap-3 rounded-xl border border-border bg-card/50 px-4 py-3">
-      <AlertTriangle
-        className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-        strokeWidth={1.8}
+      <BadgeAlertIcon
+        size={16}
+        className="mt-0.5 inline-flex shrink-0 text-muted-foreground"
       />
       <div className="space-y-0.5 text-[13px]">
         <p className="font-medium">
