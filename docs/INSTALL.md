@@ -3,13 +3,16 @@
 ## Requisitos
 
 - Python 3.10 o superior.
-- Node.js 20 o superior y npm (solo para compilar la interfaz).
 - FFmpeg disponible en el `PATH`.
 - Una WebView del sistema para la ventana nativa:
   - Linux: PyGObject y WebKitGTK 4.1.
   - Windows: Microsoft Edge WebView2.
   - macOS: WKWebView (incluido en el sistema).
 - Conexión a Internet para descargar el contenido y comprobar actualizaciones.
+
+**Node.js y npm no son necesarios para instalar ni usar la aplicación.** La interfaz compilada se distribuye en `frontend/out`. Solo se necesitan para modificar el frontend.
+
+Los instaladores intentan instalar automáticamente Python, FFmpeg y la WebView del sistema cuando faltan. Pueden pedir la contraseña de administrador o permisos de winget.
 
 yt-dlp y pywebview se instalan dentro de `backend/.venv`, por lo que no es necesario instalarlos globalmente.
 
@@ -21,12 +24,7 @@ cd backend
 python3 -m venv --system-site-packages .venv
 .venv/bin/pip install -r requirements.txt
 
-# 2. Interfaz
-cd ../frontend
-npm install
-npm run build
-
-# 3. Inicio en ventana nativa
+# 2. Inicio en ventana nativa
 cd ..
 ./scripts/run.sh
 ```
@@ -40,10 +38,6 @@ cd backend
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
-cd ..\frontend
-npm install
-npm run build
-
 cd ..
 .\run.ps1
 ```
@@ -56,32 +50,29 @@ Para usar el navegador en lugar de la ventana nativa, añade `--browser` al lanz
 
 `installer/linux/install.sh`:
 
-- Comprueba Python 3.10+ y Node.js 20+.
+- Detecta `apt`, `dnf`, `pacman` o `zypper` e instala Python 3.10+, `venv`, PyGObject, WebKitGTK 4.1 y FFmpeg si faltan.
 - Crea `backend/.venv` con acceso a los paquetes del sistema e instala FastAPI, pywebview y yt-dlp.
-- Ejecuta `npm ci` y `npm run build`.
-- Detecta FFmpeg y muestra el comando de instalación si falta.
-- Comprueba WebKitGTK 4.1 y muestra el comando de instalación si falta.
+- Usa la interfaz precompilada de `frontend/out`; no necesita Node.js ni npm.
 - Crea `~/.local/bin/local-ytdlp` y `~/.local/share/applications/local-ytdlp.desktop`.
 
 ### macOS
 
 `installer/macos/install.sh`:
 
-- Comprueba Python 3.10+ y Node.js 20+.
-- Crea el entorno e instala dependencias.
-- Compila la interfaz.
-- Instala FFmpeg con Homebrew si está disponible; si no, muestra instrucciones.
+- Comprueba Python 3.10+; si falta, instala Homebrew y Python automáticamente.
+- Crea el entorno e instala las dependencias de Python.
+- Usa la interfaz precompilada de `frontend/out`; no necesita Node.js ni npm.
+- Instala FFmpeg con Homebrew si falta.
 - Crea la aplicación `~/Applications/Local YT-DLP.app` con su `Info.plist` y su lanzador.
 
 ### Windows
 
 `installer/windows/install.ps1` (o `install.bat`):
 
-- Busca `py -3` o `python`.
-- Crea `backend\.venv` e instala dependencias.
-- Compila la interfaz con npm.
-- Instala FFmpeg con winget si falta y winget está disponible.
-- Comprueba Microsoft Edge WebView2 y muestra cómo instalarlo si falta.
+- Busca `py -3` o `python`; si falta o es anterior a 3.10, instala Python con winget.
+- Crea `backend\.venv` e instala las dependencias de Python.
+- Usa la interfaz precompilada de `frontend\out`; no necesita Node.js ni npm.
+- Instala FFmpeg y Microsoft Edge WebView2 con winget si faltan.
 - Crea `Start Local YT-DLP.bat` para diagnóstico y un acceso directo en el escritorio que abre la ventana sin consola.
 
 ## Solución de problemas
@@ -133,12 +124,10 @@ El acceso directo usa `pythonw.exe` y no muestra errores. Ejecuta `Start Local Y
 
 ### «El frontend no está compilado»
 
-Ejecuta:
+`frontend/out` debería venir incluido en el repositorio. Si falta, vuelve a descargar la aplicación o, si eres mantenedor y tienes Node.js instalado:
 
 ```bash
-cd frontend
-npm install
-npm run build
+./scripts/build-frontend.sh
 ```
 
 ### «El puerto 8765 está ocupado»
@@ -197,14 +186,13 @@ Revisa `<DATA_DIR>/logs/app.log`. Las causas habituales son falta de espacio, pe
 ## Actualizar
 
 ```bash
+git pull
+
 # Dependencias de Python (incluye yt-dlp y pywebview)
 backend/.venv/bin/pip install --upgrade -r backend/requirements.txt
-
-# Interfaz
-cd frontend
-npm install
-npm run build
 ```
+
+La interfaz compilada se actualiza con `git pull`; no hace falta Node.js. Solo los mantenedores deben regenerar `frontend/out` con `./scripts/build-frontend.sh` después de cambiar el frontend.
 
 También puedes usar el botón **Comprobar** del pie de la aplicación para consultar las últimas versiones publicadas.
 

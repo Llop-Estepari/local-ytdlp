@@ -61,8 +61,8 @@ def main(argv: list[str] | None = None) -> int:
     if not frontend_ready(settings):
         print(
             "El frontend no está compilado.\n"
-            "Ejecuta el instalador de la aplicación o, dentro de frontend/:\n"
-            "  npm install && npm run build",
+            "Vuelve a descargar la aplicación o ejecuta scripts/build-frontend.sh\n"
+            "si eres mantenedor y tienes Node.js instalado.",
             file=sys.stderr,
         )
         return 1

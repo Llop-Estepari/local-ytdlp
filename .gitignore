@@ -12,10 +12,10 @@ htmlcov/
 # Node / Next.js
 frontend/node_modules/
 frontend/.next/
-frontend/out/
 frontend/coverage/
 frontend/next-env.d.ts
 *.tsbuildinfo
+# frontend/out se versiona a propósito: los instaladores no deben requerir Node.js.
 
 # Entornos y secretos
 .env

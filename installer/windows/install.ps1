@@ -18,31 +18,71 @@ function Fail($Message) {
 Write-Step "Local YT-DLP Downloader · instalación para Windows"
 
 # --- Python -----------------------------------------------------------------
-$PythonExe = $null
-$PythonArgs = @()
+function Update-Path {
+    $MachinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $env:Path = "$MachinePath;$UserPath"
+}
 
-if (Get-Command py -ErrorAction SilentlyContinue) {
-    & py -3 -c "import sys" 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        $PythonExe = "py"
-        $PythonArgs = @("-3")
+function Resolve-Python {
+    if (Get-Command py -ErrorAction SilentlyContinue) {
+        & py -3 -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)" 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            return @{ Exe = "py"; Args = @("-3") }
+        }
+    }
+
+    if (Get-Command python -ErrorAction SilentlyContinue) {
+        & python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)" 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            return @{ Exe = "python"; Args = @() }
+        }
+    }
+
+    $Candidates = @(
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python312\python.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python313\python.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"),
+        (Join-Path $env:ProgramFiles "Python312\python.exe"),
+        (Join-Path $env:ProgramFiles "Python313\python.exe"),
+        (Join-Path $env:ProgramFiles "Python314\python.exe")
+    )
+    foreach ($Candidate in $Candidates) {
+        if (Test-Path $Candidate) {
+            return @{ Exe = $Candidate; Args = @() }
+        }
+    }
+    return $null
+}
+
+$Python = Resolve-Python
+if (-not $Python) {
+    Update-Path
+    $Python = Resolve-Python
+}
+
+if (-not $Python) {
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Step "Instalando Python con winget (puede pedir permisos)…"
+        & winget install --id Python.Python.3.12 -e --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -ne 0) {
+            Fail "No se pudo instalar Python automáticamente. Descárgalo desde https://www.python.org/downloads/ y marca «Add python.exe to PATH»."
+        }
+        Update-Path
+        $Python = Resolve-Python
     }
 }
 
-if (-not $PythonExe -and (Get-Command python -ErrorAction SilentlyContinue)) {
-    & python -c "import sys" 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        $PythonExe = "python"
-    }
+if (-not $Python) {
+    Fail "Python 3 no está disponible. Instálalo desde https://www.python.org/downloads/ y vuelve a ejecutar este instalador."
 }
 
-if (-not $PythonExe) {
-    Fail "Python 3 no está instalado. Descárgalo desde https://www.python.org/downloads/ y marca «Add python.exe to PATH»."
-}
+$PythonExe = $Python.Exe
+$PythonArgs = @($Python.Args)
 
 & $PythonExe @PythonArgs -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)"
 if ($LASTEXITCODE -ne 0) {
-    Fail "Se requiere Python 3.10 o superior."
+    Fail "Se requiere Python 3.10 o superior. Instala una versión reciente desde https://www.python.org/downloads/."
 }
 
 $VenvPython = Join-Path $Root "backend\.venv\Scripts\python.exe"
@@ -60,29 +100,9 @@ if ($LASTEXITCODE -ne 0) { Fail "No se pudo actualizar pip." }
 & $VenvPython -m pip install -r (Join-Path $Root "backend\requirements.txt") --quiet
 if ($LASTEXITCODE -ne 0) { Fail "No se pudieron instalar las dependencias de Python." }
 
-# --- Node / frontend --------------------------------------------------------
-if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-    Fail "Node.js y npm son necesarios para compilar la interfaz. Instala Node.js 20 o superior."
-}
-
-$NodeMajor = [int](& node -p "process.versions.node.split('.')[0]")
-if ($NodeMajor -lt 20) {
-    Fail "Se requiere Node.js 20 o superior (detectado $(& node --version))."
-}
-
-Write-Step "Compilando la interfaz…"
-Push-Location (Join-Path $Root "frontend")
-try {
-    if (Test-Path "package-lock.json") {
-        & npm ci --no-audit --no-fund
-    } else {
-        & npm install --no-audit --no-fund
-    }
-    if ($LASTEXITCODE -ne 0) { Fail "No se pudieron instalar las dependencias del frontend." }
-    & npm run build
-    if ($LASTEXITCODE -ne 0) { Fail "No se pudo compilar la interfaz." }
-} finally {
-    Pop-Location
+# --- Interfaz precompilada --------------------------------------------------
+if (-not (Test-Path (Join-Path $Root "frontend\out\index.html"))) {
+    Fail "Falta frontend\out\index.html. Ejecuta scripts/build-frontend.sh en el repositorio o vuelve a descargar la aplicación."
 }
 
 # --- FFmpeg -----------------------------------------------------------------
@@ -93,13 +113,18 @@ if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Aviso: no se pudo instalar FFmpeg automáticamente." -ForegroundColor Yellow
         }
+        Update-Path
     } else {
         Write-Host ""
         Write-Host "Aviso: FFmpeg no está instalado." -ForegroundColor Yellow
         Write-Host "Instálalo desde https://www.gyan.dev/ffmpeg/builds/ y añade la carpeta bin al PATH."
     }
-} else {
+}
+
+if (Get-Command ffmpeg -ErrorAction SilentlyContinue) {
     Write-Host "FFmpeg detectado."
+} else {
+    Write-Host "Aviso: FFmpeg sigue sin estar disponible en el PATH." -ForegroundColor Yellow
 }
 
 # --- Ventana nativa (WebView2) ---------------------------------------------
@@ -116,11 +141,22 @@ foreach ($Key in $WebView2Keys) {
     }
 }
 if (-not $HasWebView2) {
-    Write-Host ""
-    Write-Host "Aviso: no se detectó Microsoft Edge WebView2." -ForegroundColor Yellow
-    Write-Host "La ventana nativa lo necesita. Instálalo desde:"
-    Write-Host "  https://developer.microsoft.com/microsoft-edge/webview2/"
-    Write-Host "Si no está disponible, la aplicación se abrirá en el navegador."
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Step "Instalando Microsoft Edge WebView2 Runtime…"
+        & winget install --id Microsoft.EdgeWebView2Runtime -e --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host ""
+            Write-Host "Aviso: no se pudo instalar WebView2 automáticamente." -ForegroundColor Yellow
+            Write-Host "Instálalo desde https://developer.microsoft.com/microsoft-edge/webview2/"
+            Write-Host "Si no está disponible, la aplicación se abrirá en el navegador."
+        }
+    } else {
+        Write-Host ""
+        Write-Host "Aviso: no se detectó Microsoft Edge WebView2." -ForegroundColor Yellow
+        Write-Host "La ventana nativa lo necesita. Instálalo desde:"
+        Write-Host "  https://developer.microsoft.com/microsoft-edge/webview2/"
+        Write-Host "Si no está disponible, la aplicación se abrirá en el navegador."
+    }
 }
 
 # --- Lanzador ---------------------------------------------------------------

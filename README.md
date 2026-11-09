@@ -34,20 +34,21 @@ La interfaz se muestra en una ventana nativa (WebKitGTK en Linux, WebView2 en Wi
 | Componente | Versión | Uso |
 | --- | --- | --- |
 | Python | 3.10 o superior | Backend FastAPI y ventana nativa |
-| Node.js + npm | 20 o superior | Compilar la interfaz |
 | FFmpeg | Versión reciente | Combinar pistas y convertir audio |
 | yt-dlp | Se instala en el entorno virtual | Análisis y descargas |
 | pywebview | Se instala en el entorno virtual | Ventana de escritorio |
 
 La ventana nativa usa componentes del sistema:
 
-| Sistema | Componente | Instalación |
+| Sistema | Componente | Instalación automática |
 | --- | --- | --- |
-| Linux | PyGObject + WebKitGTK 4.1 | `sudo apt install python3-gi gir1.2-webkit2-4.1` |
-| Windows | Microsoft Edge WebView2 | <https://developer.microsoft.com/microsoft-edge/webview2/> |
+| Linux | PyGObject + WebKitGTK 4.1 | Sí, con el gestor de paquetes de la distribución |
+| Windows | Microsoft Edge WebView2 | Sí, con winget |
 | macOS | WKWebView (incluido en el sistema) | No requiere instalación |
 
-El instalador comprueba estas dependencias, crea el entorno de Python, instala yt-dlp y pywebview, y compila el frontend.
+**Node.js y npm no son necesarios para instalar la aplicación.** La interfaz ya está compilada en `frontend/out` y se distribuye con el repositorio. Solo se necesitan para modificar o regenerar la interfaz durante el desarrollo.
+
+El instalador instala automáticamente Python, FFmpeg y la WebView del sistema cuando faltan. Puede pedir la contraseña de administrador (Linux/macOS) o permisos de winget (Windows).
 
 ## Instalación
 
@@ -59,9 +60,9 @@ cd local-yt-dlp
 ./installer/linux/install.sh
 ```
 
-El instalador crea un lanzador en el menú de aplicaciones y el comando `local-ytdlp`.
+Instala automáticamente las dependencias que falten con `apt`, `dnf`, `pacman` o `zypper`, crea un lanzador en el menú de aplicaciones y el comando `local-ytdlp`.
 
-Si falta WebKitGTK, instálalo con el comando que indique el instalador y vuelve a ejecutarlo. Sin WebKitGTK la aplicación sigue funcionando, pero se abre en el navegador.
+Si el gestor de paquetes no encuentra WebKitGTK, la aplicación sigue funcionando, pero se abre en el navegador.
 
 ### macOS
 
@@ -70,7 +71,7 @@ cd local-yt-dlp
 ./installer/macos/install.sh
 ```
 
-Crea la aplicación `~/Applications/Local YT-DLP.app`. Si macOS bloquea la primera apertura, haz clic derecho sobre ella y elige **Abrir**.
+Si falta Python o FFmpeg, instala Homebrew automáticamente y después las dependencias. Crea la aplicación `~/Applications/Local YT-DLP.app`. Si macOS bloquea la primera apertura, haz clic derecho sobre ella y elige **Abrir**.
 
 ### Windows
 
@@ -79,7 +80,7 @@ cd local-yt-dlp
 .\installer\windows\install.ps1
 ```
 
-También puedes hacer doble clic en `installer\windows\install.bat`. El instalador crea el acceso directo **Local YT-DLP** en el escritorio, que abre la ventana sin consola.
+También puedes hacer doble clic en `installer\windows\install.bat`. Si falta Python, FFmpeg o WebView2, el instalador los instala con winget. Después crea el acceso directo **Local YT-DLP** en el escritorio, que abre la ventana sin consola.
 
 ## Uso
 
@@ -148,7 +149,7 @@ npm run dev        # http://127.0.0.1:3000
 El modo desarrollo sigue usando el navegador y el servidor de Next.js. Para probar la ventana nativa con el frontend compilado:
 
 ```bash
-cd frontend && npm run build && cd ..
+./scripts/build-frontend.sh
 ./scripts/run.sh --debug
 ```
 
@@ -159,14 +160,17 @@ cd backend
 RUN_INTEGRATION=1 .venv/bin/pytest -q tests/test_integration.py -vv
 ```
 
-Compilación de producción:
+Compilación de producción (solo mantenedores):
 
 ```bash
 cd frontend
 npm run typecheck
 npm test
-npm run build      # genera frontend/out
+cd ..
+./scripts/build-frontend.sh   # regenera frontend/out
 ```
+
+`frontend/out` se versiona en el repositorio para que los usuarios finales no necesiten Node.js. Después de cambiar el frontend, ejecuta el script y haz commit también de `frontend/out`.
 
 El backend sirve `frontend/out` en un único origen. En desarrollo, Next.js usa `http://127.0.0.1:8765` como API.
 
@@ -215,8 +219,9 @@ Los logs se guardan en `<DATA_DIR>/logs/app.log`. El estado persistente de la ve
 ```
 backend/            FastAPI, servicios, seguridad, ventana nativa y pruebas
 frontend/           Next.js, React, TypeScript y Tailwind
+frontend/out/       Interfaz compilada versionada (no requiere Node.js al instalar)
 assets/             Iconos de la aplicación (PNG, ICO e ICNS)
-scripts/            Lanzadores y desarrollo
+scripts/            Lanzadores, desarrollo y compilación de la interfaz
 installer/          Instaladores de Linux, macOS y Windows
 docs/               API, arquitectura e instalación
 ```

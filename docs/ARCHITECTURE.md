@@ -55,6 +55,7 @@ backend/
   tests/               Unitarias + integración real
 assets/                Iconos de la aplicación (PNG, ICO e ICNS)
 frontend/
+  out/                 Interfaz compilada versionada (instalación sin Node.js)
   app/                 Layout, página, estilos y metadatos
   components/          Pantalla única y estados progresivos
                        (playlist-panel, download-toast, download-options-dialog,

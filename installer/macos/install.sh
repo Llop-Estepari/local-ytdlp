@@ -6,20 +6,59 @@ cd "$ROOT"
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 fail() { printf '\nError: %s\n' "$*" >&2; exit 1; }
+warn() { printf '\nAviso: %b\n\n' "$*" >&2; }
 
 say "Local YT-DLP Downloader · instalación para macOS"
 
+# --- Homebrew ---------------------------------------------------------------
+load_brew() {
+  if command -v brew >/dev/null 2>&1; then
+    return 0
+  fi
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -x /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+}
+
+ensure_homebrew() {
+  load_brew
+  if command -v brew >/dev/null 2>&1; then
+    return 0
+  fi
+  say "Homebrew no está instalado. Instalándolo automáticamente (puede pedir tu contraseña)…"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+    || fail "No se pudo instalar Homebrew. Instálalo manualmente desde https://brew.sh y vuelve a ejecutar este instalador."
+  load_brew
+  command -v brew >/dev/null 2>&1 \
+    || fail "Homebrew se instaló pero no se pudo cargar en el PATH. Abre una terminal nueva y vuelve a ejecutar este instalador."
+}
+
 # --- Python -----------------------------------------------------------------
-if ! command -v python3 >/dev/null 2>&1; then
-  fail "Python 3 no está instalado. Instálalo desde https://www.python.org/downloads/ o con Homebrew."
+PYTHON_BIN=""
+if command -v python3 >/dev/null 2>&1; then
+  if python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
+    PYTHON_BIN="$(command -v python3)"
+  fi
 fi
 
-python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' \
-  || fail "Se requiere Python 3.10 o superior (detectado $(python3 -V 2>&1))."
+if [ -z "$PYTHON_BIN" ]; then
+  ensure_homebrew
+  say "Instalando Python con Homebrew…"
+  brew install python \
+    || fail "No se pudo instalar Python con Homebrew. Ejecuta: brew install python"
+  load_brew
+  PYTHON_BIN="$(brew --prefix)/bin/python3"
+fi
+
+"$PYTHON_BIN" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' \
+  || fail "Se requiere Python 3.10 o superior (detectado $("$PYTHON_BIN" -V 2>&1))."
 
 if [ ! -d backend/.venv ]; then
   say "Creando entorno virtual de Python…"
-  python3 -m venv backend/.venv
+  "$PYTHON_BIN" -m venv backend/.venv \
+    || fail "No se pudo crear el entorno virtual de Python."
 fi
 
 VENV_PYTHON="$ROOT/backend/.venv/bin/python"
@@ -28,43 +67,17 @@ say "Instalando dependencias de Python (FastAPI, yt-dlp)…"
 "$VENV_PYTHON" -m pip install --upgrade pip --quiet
 "$VENV_PYTHON" -m pip install -r backend/requirements.txt --quiet
 
-# --- Node / frontend --------------------------------------------------------
-if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
-  fail "Node.js y npm son necesarios para compilar la interfaz. Instala Node.js 20 o superior."
+# --- Interfaz precompilada --------------------------------------------------
+if [ ! -f frontend/out/index.html ]; then
+  fail "Falta frontend/out/index.html. Ejecuta scripts/build-frontend.sh en el repositorio o vuelve a descargar la aplicación."
 fi
-
-NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
-if [ "$NODE_MAJOR" -lt 20 ]; then
-  fail "Se requiere Node.js 20 o superior (detectado $(node --version))."
-fi
-
-say "Compilando la interfaz…"
-cd frontend
-if [ -f package-lock.json ]; then
-  npm ci --no-audit --no-fund
-else
-  npm install --no-audit --no-fund
-fi
-npm run build
-cd "$ROOT"
 
 # --- FFmpeg -----------------------------------------------------------------
 if ! command -v ffmpeg >/dev/null 2>&1; then
-  if command -v brew >/dev/null 2>&1; then
-    say "Instalando FFmpeg con Homebrew…"
-    brew install ffmpeg || fail "No se pudo instalar FFmpeg. Ejecuta: brew install ffmpeg"
-  else
-    cat <<'EOF'
-
-Aviso: FFmpeg no está instalado. Es necesario para combinar pistas y convertir audio.
-Instálalo con Homebrew (https://brew.sh):
-
-  brew install ffmpeg
-
-Después vuelve a iniciar la aplicación.
-
-EOF
-  fi
+  ensure_homebrew
+  say "Instalando FFmpeg con Homebrew…"
+  brew install ffmpeg \
+    || warn "No se pudo instalar FFmpeg automáticamente. Ejecuta: brew install ffmpeg"
 else
   printf 'FFmpeg detectado: %s\n' "$(ffmpeg -version 2>/dev/null | head -n 1)"
 fi
@@ -72,7 +85,7 @@ fi
 printf 'yt-dlp detectado: %s\n' "$("$VENV_PYTHON" -m yt_dlp --version 2>/dev/null || echo 'no disponible')"
 
 # --- Lanzador ---------------------------------------------------------------
-chmod +x scripts/run.sh scripts/dev.sh run.command
+chmod +x scripts/run.sh scripts/dev.sh scripts/build-frontend.sh run.command
 
 APP_DIR="$HOME/Applications"
 APP_BUNDLE="$APP_DIR/Local YT-DLP.app"
