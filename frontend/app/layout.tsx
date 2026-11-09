@@ -18,8 +18,9 @@ const themeScript = `
 `;
 
 export const metadata: Metadata = {
-  title: "Local YT-DLP",
-  description: "Local media downloader with yt-dlp and FFmpeg.",
+  title: "Vidora",
+  description: "Descarga contenido multimedia local con yt-dlp y FFmpeg.",
+  applicationName: "Vidora",
   robots: { index: false, follow: false },
 };
 

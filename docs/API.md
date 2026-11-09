@@ -1,4 +1,4 @@
-# Referencia de la API
+# Referencia de la API de Vidora
 
 La API se sirve en `http://127.0.0.1:8765/api` (configurable con `LOCAL_YTDLP_PORT`). La aplicación de escritorio y el frontend de producción se sirven desde el mismo origen; en desarrollo, Next.js usa `http://127.0.0.1:3000`.
 

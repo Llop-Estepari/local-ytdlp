@@ -17,7 +17,7 @@ from .desktop import run_browser, run_desktop
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="python -m app",
-        description="Local YT-DLP Downloader",
+        description="Vidora",
     )
     parser.add_argument(
         "--browser",

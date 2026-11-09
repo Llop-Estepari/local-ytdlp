@@ -27,7 +27,7 @@ from typing import Any
 from .core.config import Settings
 from .factory import create_app
 
-WINDOW_TITLE = "Local YT-DLP"
+WINDOW_TITLE = "Vidora"
 WINDOW_WIDTH = 1180
 WINDOW_HEIGHT = 820
 WINDOW_MIN_SIZE = (760, 560)
@@ -132,7 +132,7 @@ def start_background_server(settings: Settings) -> ServerHandle:
 
     thread = threading.Thread(
         target=run,
-        name="local-ytdlp-server",
+        name="vidora-server",
         daemon=True,
     )
     thread.start()
@@ -303,7 +303,7 @@ def run_browser(settings: Settings) -> int:
         )
         return 1
 
-    _print("Local YT-DLP Downloader")
+    _print("Vidora")
     _print(f"Interfaz: {url}")
     _print(f"Datos:    {settings.app_data_dir}")
     if settings.allow_network:

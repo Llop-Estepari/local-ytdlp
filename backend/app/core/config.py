@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-APP_NAME = "Local YT-DLP Downloader"
+APP_NAME = "Vidora"
 DEFAULT_PORT = 8765
 MIN_TOKEN_LENGTH = 24
 
@@ -37,12 +37,12 @@ def _default_data_dir() -> Path:
 
     if sys.platform == "win32":
         base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
-        return base / "LocalYTDLP"
+        return base / "Vidora"
     if sys.platform == "darwin":
-        return Path.home() / "Library" / "Application Support" / "LocalYTDLP"
+        return Path.home() / "Library" / "Application Support" / "Vidora"
 
     state_home = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
-    return state_home / "local-ytdlp"
+    return state_home / "vidora"
 
 
 def _xdg_user_dir(key: str, fallback: Path) -> Path:

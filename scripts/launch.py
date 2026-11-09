@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start Local YT-DLP as a desktop application.
+"""Start Vidora as a desktop application.
 
 The default mode opens a native window with ``pywebview`` and keeps the local
 FastAPI service running in the background. Use ``--browser`` to keep the old
@@ -32,7 +32,7 @@ from app.desktop import (  # noqa: E402
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="local-ytdlp",
+        prog="vidora",
         description="Descarga contenido multimedia con yt-dlp en una ventana de escritorio.",
     )
     parser.add_argument(
@@ -67,7 +67,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    print("Local YT-DLP Downloader")
+    print("Vidora")
     print(f"Datos: {settings.app_data_dir}")
     if settings.allow_network:
         print(

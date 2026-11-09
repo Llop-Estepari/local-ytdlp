@@ -8,7 +8,7 @@ say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 fail() { printf '\nError: %s\n' "$*" >&2; exit 1; }
 warn() { printf '\nAviso: %b\n\n' "$*" >&2; }
 
-say "Local YT-DLP Downloader · instalación para macOS"
+say "Vidora · instalación para macOS"
 
 # --- Homebrew ---------------------------------------------------------------
 load_brew() {
@@ -88,9 +88,10 @@ printf 'yt-dlp detectado: %s\n' "$("$VENV_PYTHON" -m yt_dlp --version 2>/dev/nul
 chmod +x scripts/run.sh scripts/dev.sh scripts/build-frontend.sh run.command
 
 APP_DIR="$HOME/Applications"
-APP_BUNDLE="$APP_DIR/Local YT-DLP.app"
+APP_BUNDLE="$APP_DIR/Vidora.app"
 mkdir -p "$APP_DIR"
 rm -rf "$APP_BUNDLE"
+rm -rf "$APP_DIR/Local YT-DLP.app"
 mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 if [ -f assets/icon.icns ]; then
   cp assets/icon.icns "$APP_BUNDLE/Contents/Resources/icon.icns"
@@ -102,11 +103,11 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<'EOF'
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key>
-  <string>Local YT-DLP</string>
+  <string>Vidora</string>
   <key>CFBundleDisplayName</key>
-  <string>Local YT-DLP</string>
+  <string>Vidora</string>
   <key>CFBundleIdentifier</key>
-  <string>com.localytdlp.app</string>
+  <string>com.vidora.app</string>
   <key>CFBundleVersion</key>
   <string>1.0.0</string>
   <key>CFBundleShortVersionString</key>
@@ -132,8 +133,8 @@ EOF
 chmod +x "$APP_BUNDLE/Contents/MacOS/launcher"
 
 say "Instalación completada"
-echo "Abre «Local YT-DLP» desde tu carpeta Aplicaciones o ejecuta:"
+echo "Abre «Vidora» desde tu carpeta Aplicaciones o ejecuta:"
 echo "  open \"$APP_BUNDLE\""
 echo
 echo "La primera vez, macOS puede pedir permiso para abrir la aplicación:"
-echo "haz clic derecho sobre «Local YT-DLP» y elige «Abrir»."
+echo "haz clic derecho sobre «Vidora» y elige «Abrir»."

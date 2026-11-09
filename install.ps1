@@ -2,7 +2,7 @@
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex"
 #
-# It downloads or updates the repository in %LOCALAPPDATA%\LocalYTDLP\app and
+# It downloads or updates the repository in %LOCALAPPDATA%\Vidora\app and
 # runs installer\windows\install.ps1.
 
 $ErrorActionPreference = "Stop"
@@ -26,7 +26,7 @@ function Fail($Message) {
 $InstallDir = if ($env:LOCAL_YTDLP_INSTALL_DIR) {
     $env:LOCAL_YTDLP_INSTALL_DIR
 } else {
-    Join-Path $env:LOCALAPPDATA "LocalYTDLP\app"
+    Join-Path $env:LOCALAPPDATA "Vidora\app"
 }
 
 # Allow .\install.ps1 from a local checkout without cloning again.
@@ -36,10 +36,10 @@ if ($PSScriptRoot -and (Test-Path (Join-Path $PSScriptRoot "installer\windows\in
 }
 
 function Install-Archive {
-    $Temp = Join-Path ([IO.Path]::GetTempPath()) ("local-ytdlp-" + [guid]::NewGuid().ToString("N"))
+    $Temp = Join-Path ([IO.Path]::GetTempPath()) ("vidora-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $Temp -Force | Out-Null
     try {
-        Write-Step "Descargando Local YT-DLP…"
+        Write-Step "Descargando Vidora…"
         $Zip = Join-Path $Temp "repo.zip"
         Invoke-WebRequest -Uri $ArchiveUrl -OutFile $Zip -UseBasicParsing
         Expand-Archive -Path $Zip -DestinationPath $Temp -Force
@@ -65,7 +65,7 @@ if ($AppDir -eq $InstallDir) {
         if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
             Fail "La instalación existente usa git, pero git no está disponible."
         }
-        Write-Step "Actualizando Local YT-DLP…"
+        Write-Step "Actualizando Vidora…"
         & git -C $AppDir pull --ff-only
         if ($LASTEXITCODE -ne 0) {
             Fail "No se pudo actualizar. Revisa los cambios locales en $AppDir."
@@ -74,11 +74,11 @@ if ($AppDir -eq $InstallDir) {
         Write-Step "Usando la instalación existente en $AppDir"
     } else {
         if ((Test-Path $AppDir) -and (Get-ChildItem -Path $AppDir -Force | Select-Object -First 1)) {
-            Fail "La carpeta $AppDir existe pero no parece una instalación de Local YT-DLP."
+            Fail "La carpeta $AppDir existe pero no parece una instalación de Vidora."
         }
 
         if (Get-Command git -ErrorAction SilentlyContinue) {
-            Write-Step "Descargando Local YT-DLP…"
+            Write-Step "Descargando Vidora…"
             & git clone --depth 1 --branch $Branch $RepoUrl $AppDir
             if ($LASTEXITCODE -ne 0) {
                 Remove-Item -Path $AppDir -Recurse -Force -ErrorAction SilentlyContinue

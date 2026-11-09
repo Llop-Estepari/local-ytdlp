@@ -17,7 +17,7 @@ function Fail($Message) {
     exit 1
 }
 
-Write-Step "Local YT-DLP Downloader · instalación para Windows"
+Write-Step "Vidora · instalación para Windows"
 
 # --- Python -----------------------------------------------------------------
 function Update-Path {
@@ -162,18 +162,20 @@ if (-not $HasWebView2) {
 }
 
 # --- Lanzador ---------------------------------------------------------------
-$StartBat = Join-Path $Root "Start Local YT-DLP.bat"
+$StartBat = Join-Path $Root "Start Vidora.bat"
 @"
 @echo off
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run.ps1"
 "@ | Set-Content -Path $StartBat -Encoding ASCII
+Remove-Item -Path (Join-Path $Root "Start Local YT-DLP.bat") -Force -ErrorAction SilentlyContinue
 
 $VenvPythonw = Join-Path $Root "backend\.venv\Scripts\pythonw.exe"
 try {
     $Desktop = [Environment]::GetFolderPath("Desktop")
     if ($Desktop) {
         $Shell = New-Object -ComObject WScript.Shell
-        $Shortcut = $Shell.CreateShortcut((Join-Path $Desktop "Local YT-DLP.lnk"))
+        $ShortcutPath = Join-Path $Desktop "Vidora.lnk"
+        $Shortcut = $Shell.CreateShortcut($ShortcutPath)
         if (Test-Path $VenvPythonw) {
             $Shortcut.TargetPath = $VenvPythonw
             $Shortcut.Arguments = '"' + (Join-Path $Root "scripts\launch.py") + '"'
@@ -188,15 +190,16 @@ try {
         } else {
             $Shortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,137"
         }
-        $Shortcut.Description = "Local YT-DLP Downloader"
+        $Shortcut.Description = "Vidora"
         $Shortcut.Save()
+        Remove-Item -Path (Join-Path $Desktop "Local YT-DLP.lnk") -Force -ErrorAction SilentlyContinue
     }
 } catch {
     Write-Host "Aviso: no se pudo crear el acceso directo del escritorio." -ForegroundColor Yellow
 }
 
 Write-Step "Instalación completada"
-Write-Host "Inicia la aplicación con el acceso directo «Local YT-DLP» del escritorio."
+Write-Host "Inicia la aplicación con el acceso directo «Vidora» del escritorio."
 Write-Host "Para ver la consola de diagnóstico ejecuta:"
 Write-Host "  $StartBat"
 Write-Host ""

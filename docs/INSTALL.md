@@ -1,4 +1,4 @@
-# Instalación y solución de problemas
+# Instalación y solución de problemas de Vidora
 
 ## Requisitos
 
@@ -48,20 +48,20 @@ Carpetas por defecto:
 
 | Sistema | Ruta |
 | --- | --- |
-| Linux | `~/.local/share/local-ytdlp` |
-| macOS | `~/Library/Application Support/local-ytdlp` |
-| Windows | `%LOCALAPPDATA%\LocalYTDLP\app` |
+| Linux | `~/.local/share/vidora` |
+| macOS | `~/Library/Application Support/Vidora` |
+| Windows | `%LOCALAPPDATA%\Vidora\app` |
 
 Para cambiar la carpeta en Linux o macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | LOCAL_YTDLP_INSTALL_DIR="$HOME/apps/local-ytdlp" bash
+curl -fsSL https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.sh | LOCAL_YTDLP_INSTALL_DIR="$HOME/apps/vidora" bash
 ```
 
 En Windows:
 
 ```powershell
-$env:LOCAL_YTDLP_INSTALL_DIR="$env:USERPROFILE\apps\local-ytdlp"; irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex
+$env:LOCAL_YTDLP_INSTALL_DIR="$env:USERPROFILE\apps\vidora"; irm https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/install.ps1 | iex
 ```
 
 ## Instalación manual
@@ -101,7 +101,7 @@ Para usar el navegador en lugar de la ventana nativa, añade `--browser` al lanz
 - Detecta `apt`, `dnf`, `pacman` o `zypper` e instala Python 3.10+, `venv`, PyGObject, WebKitGTK 4.1 y FFmpeg si faltan.
 - Crea `backend/.venv` con acceso a los paquetes del sistema e instala FastAPI, pywebview y yt-dlp.
 - Usa la interfaz precompilada de `frontend/out`; no necesita Node.js ni npm.
-- Crea `~/.local/bin/local-ytdlp` y `~/.local/share/applications/local-ytdlp.desktop`.
+- Crea `~/.local/bin/vidora` y `~/.local/share/applications/vidora.desktop`.
 
 ### macOS
 
@@ -111,7 +111,7 @@ Para usar el navegador en lugar de la ventana nativa, añade `--browser` al lanz
 - Crea el entorno e instala las dependencias de Python.
 - Usa la interfaz precompilada de `frontend/out`; no necesita Node.js ni npm.
 - Instala FFmpeg con Homebrew si falta.
-- Crea la aplicación `~/Applications/Local YT-DLP.app` con su `Info.plist` y su lanzador.
+- Crea la aplicación `~/Applications/Vidora.app` con su `Info.plist` y su lanzador.
 
 ### Windows
 
@@ -121,7 +121,7 @@ Para usar el navegador en lugar de la ventana nativa, añade `--browser` al lanz
 - Crea `backend\.venv` e instala las dependencias de Python.
 - Usa la interfaz precompilada de `frontend\out`; no necesita Node.js ni npm.
 - Instala FFmpeg y Microsoft Edge WebView2 con winget si faltan.
-- Crea `Start Local YT-DLP.bat` para diagnóstico y un acceso directo en el escritorio que abre la ventana sin consola.
+- Crea `Start Vidora.bat` para diagnóstico y un acceso directo en el escritorio que abre la ventana sin consola.
 
 ## Solución de problemas
 
@@ -168,7 +168,7 @@ Si el problema continúa, usa temporalmente el modo navegador con `--browser`.
 
 ### La ventana no se abre en Windows
 
-El acceso directo usa `pythonw.exe` y no muestra errores. Ejecuta `Start Local YT-DLP.bat` para ver la consola de diagnóstico o revisa `<DATA_DIR>\logs\app.log`. Comprueba también que Microsoft Edge WebView2 esté instalado.
+El acceso directo usa `pythonw.exe` y no muestra errores. Ejecuta `Start Vidora.bat` para ver la consola de diagnóstico o revisa `<DATA_DIR>\logs\app.log`. Comprueba también que Microsoft Edge WebView2 esté instalado.
 
 ### «El frontend no está compilado»
 
@@ -246,14 +246,14 @@ También puedes usar el botón **Comprobar** del pie de la aplicación para cons
 
 ## Desinstalar
 
-- Linux: elimina `~/.local/bin/local-ytdlp`, `~/.local/share/applications/local-ytdlp.desktop` y la carpeta del proyecto.
-- macOS: elimina `~/Applications/Local YT-DLP.app` y la carpeta del proyecto.
-- Windows: elimina el acceso directo del escritorio, `Start Local YT-DLP.bat` y la carpeta del proyecto.
+- Linux: elimina `~/.local/bin/vidora`, `~/.local/share/applications/vidora.desktop` y la carpeta del proyecto.
+- macOS: elimina `~/Applications/Vidora.app` y la carpeta del proyecto.
+- Windows: elimina el acceso directo del escritorio, `Start Vidora.bat` y la carpeta del proyecto.
 
 Los datos locales (token, logs, temporales y almacenamiento de la ventana) están en:
 
 | Sistema | Ruta |
 | --- | --- |
-| Linux | `~/.local/state/local-ytdlp` |
-| macOS | `~/Library/Application Support/LocalYTDLP` |
-| Windows | `%LOCALAPPDATA%\LocalYTDLP` |
+| Linux | `~/.local/state/vidora` |
+| macOS | `~/Library/Application Support/Vidora` |
+| Windows | `%LOCALAPPDATA%\Vidora` |

@@ -17,11 +17,11 @@ fail() { printf '\nError: %s\n' "$*" >&2; exit 1; }
 case "$(uname -s)" in
   Linux)
     PLATFORM="linux"
-    DEFAULT_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/local-ytdlp"
+    DEFAULT_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/vidora"
     ;;
   Darwin)
     PLATFORM="macos"
-    DEFAULT_DIR="$HOME/Library/Application Support/local-ytdlp"
+    DEFAULT_DIR="$HOME/Library/Application Support/Vidora"
     ;;
   *)
     fail "Sistema no compatible. Usa installer/linux o installer/macos manualmente."
@@ -61,7 +61,7 @@ download_archive() (
   temp_dir="$(mktemp -d)"
   trap 'rm -rf "$temp_dir"' EXIT
 
-  say "Descargando Local YT-DLP…"
+  say "Descargando Vidora…"
   download_to "$REPO_ARCHIVE" "$temp_dir/repo.tar.gz" \
     || fail "No se pudo descargar el repositorio."
   tar -xzf "$temp_dir/repo.tar.gz" -C "$temp_dir" \
@@ -79,7 +79,7 @@ install_or_update() {
   if [ -d "$INSTALL_DIR/.git" ]; then
     command -v git >/dev/null 2>&1 \
       || fail "La instalación existente usa git, pero git no está disponible."
-    say "Actualizando Local YT-DLP…"
+    say "Actualizando Vidora…"
     git -C "$INSTALL_DIR" pull --ff-only \
       || fail "No se pudo actualizar. Revisa los cambios locales en $INSTALL_DIR."
     return
@@ -90,11 +90,11 @@ install_or_update() {
       say "Usando la instalación existente en $INSTALL_DIR"
       return
     fi
-    fail "La carpeta $INSTALL_DIR existe pero no parece una instalación de Local YT-DLP."
+    fail "La carpeta $INSTALL_DIR existe pero no parece una instalación de Vidora."
   fi
 
   if command -v git >/dev/null 2>&1; then
-    say "Descargando Local YT-DLP…"
+    say "Descargando Vidora…"
     if git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$INSTALL_DIR"; then
       return
     fi

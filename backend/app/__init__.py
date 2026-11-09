@@ -1,3 +1,3 @@
-"""Local YT-DLP Downloader backend."""
+"""Vidora backend."""
 
 __version__ = "1.0.0"

@@ -1,4 +1,4 @@
-# Arquitectura
+# Arquitectura de Vidora
 
 ## Visión general
 

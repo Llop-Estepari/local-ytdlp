@@ -11,7 +11,7 @@ import httpx
 from packaging.version import InvalidVersion, Version
 
 _CACHE_TTL = 3600.0
-_HEADERS = {"User-Agent": "LocalYTDLP/1.0"}
+_HEADERS = {"User-Agent": "Vidora/1.0"}
 
 
 def _parse_version(raw: str | None) -> Version | None:

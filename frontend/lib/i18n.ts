@@ -5,7 +5,7 @@ export type MessageParams = Record<string, string | number>;
 type Message = string | ((params: MessageParams) => string);
 
 const es = {
-  "app.title": "Local YT-DLP",
+  "app.title": "Vidora",
   "theme.toggle": "Cambiar entre tema claro y oscuro",
   "nav.home": "Ir al inicio",
   "queue.open": ({ count }) => `Abrir cola (${count})`,
@@ -166,7 +166,7 @@ const es = {
 export type MessageKey = keyof typeof es;
 
 const en: Record<MessageKey, Message> = {
-  "app.title": "Local YT-DLP",
+  "app.title": "Vidora",
   "theme.toggle": "Toggle light and dark theme",
   "nav.home": "Back to home",
   "queue.open": ({ count }) => `Open queue (${count})`,

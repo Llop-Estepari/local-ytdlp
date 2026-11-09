@@ -52,7 +52,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         logger.info(
-            "Local YT-DLP %s en http://%s:%s (datos: %s)",
+            "Vidora %s en http://%s:%s (datos: %s)",
             __version__,
             settings.host,
             settings.port,
@@ -73,7 +73,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.info("Servicio detenido.")
 
     app = FastAPI(
-        title="Local YT-DLP Downloader API",
+        title="Vidora API",
         version=__version__,
         docs_url=None,
         redoc_url=None,
@@ -158,7 +158,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         async def frontend_missing() -> HTMLResponse:
             return HTMLResponse(
                 "<!doctype html><html lang='es'><meta charset='utf-8'>"
-                "<title>Local YT-DLP</title>"
+                "<title>Vidora</title>"
                 "<body style='font-family:system-ui;padding:3rem;max-width:40rem;margin:auto'>"
                 "<h1>Frontend no compilado</h1>"
                 "<p>Ejecuta <code>npm install &amp;&amp; npm run build</code> dentro de "

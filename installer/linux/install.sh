@@ -8,7 +8,7 @@ say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 fail() { printf '\nError: %s\n' "$*" >&2; exit 1; }
 warn() { printf '\nAviso: %b\n\n' "$*" >&2; }
 
-say "Local YT-DLP Downloader · instalación para Linux"
+say "Vidora · instalación para Linux"
 
 # --- Dependencias del sistema ----------------------------------------------
 PM=""
@@ -170,14 +170,16 @@ printf 'yt-dlp detectado: %s\n' "$("$VENV_PYTHON" -m yt_dlp --version 2>/dev/nul
 chmod +x scripts/run.sh scripts/dev.sh scripts/build-frontend.sh run.command
 
 mkdir -p "$HOME/.local/bin"
-ln -sf "$ROOT/scripts/run.sh" "$HOME/.local/bin/local-ytdlp"
+rm -f "$HOME/.local/bin/local-ytdlp"
+ln -sf "$ROOT/scripts/run.sh" "$HOME/.local/bin/vidora"
 
 DESKTOP_DIR="$HOME/.local/share/applications"
 mkdir -p "$DESKTOP_DIR"
-cat > "$DESKTOP_DIR/local-ytdlp.desktop" <<EOF
+rm -f "$DESKTOP_DIR/local-ytdlp.desktop"
+cat > "$DESKTOP_DIR/vidora.desktop" <<EOF
 [Desktop Entry]
 Type=Application
-Name=Local YT-DLP
+Name=Vidora
 Comment=Descarga contenido multimedia con yt-dlp
 Exec="$ROOT/scripts/run.sh"
 Path=$ROOT
@@ -192,7 +194,7 @@ if command -v update-desktop-database >/dev/null 2>&1; then
 fi
 
 say "Instalación completada"
-echo "Inicia la aplicación desde el menú «Local YT-DLP» o ejecutando:"
+echo "Inicia la aplicación desde el menú «Vidora» o ejecutando:"
 echo "  $ROOT/scripts/run.sh"
 echo
 echo "Si ~/.local/bin no está en tu PATH, añade esta línea a tu ~/.bashrc o ~/.zshrc:"
