@@ -161,10 +161,37 @@ class ToolUpdateStatus(BaseModel):
     error: str | None = None
 
 
+class AppUpdateStatus(BaseModel):
+    installed: str
+    latest: str | None = None
+    update_available: bool | None = None
+    error: str | None = None
+
+
 class UpdateCheckResponse(BaseModel):
+    app: AppUpdateStatus
     ytdlp: ToolUpdateStatus
     ffmpeg: ToolUpdateStatus
     checked_at: str
+
+
+ToolName = Literal["ytdlp", "ffmpeg"]
+
+
+class UpdateToolRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    tool: ToolName
+
+
+class DependencyUpdateResponse(BaseModel):
+    tool: ToolName
+    updated: bool
+    version: str | None = None
+    error: str | None = None
+    hint: str | None = None
+    dependencies: DependenciesResponse
+    check: UpdateCheckResponse | None = None
 
 
 class SessionResponse(BaseModel):

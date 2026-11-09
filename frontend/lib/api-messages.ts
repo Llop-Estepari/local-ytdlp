@@ -173,6 +173,8 @@ const EN: Record<string, string> = {
     "The download failed unexpectedly.",
 
   // Update checks
+  "No se pudo comprobar la última versión de Vidora.":
+    "Could not check the latest Vidora version.",
   "No se pudo comprobar la última versión de yt-dlp.":
     "Could not check the latest yt-dlp version.",
   "No se pudo comprobar la última versión de FFmpeg.":

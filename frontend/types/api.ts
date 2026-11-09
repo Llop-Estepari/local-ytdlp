@@ -108,9 +108,29 @@ export interface ToolUpdateStatus {
 }
 
 export interface UpdateCheckResponse {
+  app: AppUpdateStatus;
   ytdlp: ToolUpdateStatus;
   ffmpeg: ToolUpdateStatus;
   checked_at: string;
+}
+
+export interface AppUpdateStatus {
+  installed: string;
+  latest: string | null;
+  update_available: boolean | null;
+  error: string | null;
+}
+
+export type ToolName = "ytdlp" | "ffmpeg";
+
+export interface DependencyUpdateResponse {
+  tool: ToolName;
+  updated: boolean;
+  version: string | null;
+  error: string | null;
+  hint: string | null;
+  dependencies: DependenciesResponse;
+  check: UpdateCheckResponse | null;
 }
 
 export interface DirectoryEntry {

@@ -652,7 +652,11 @@ export function Downloader() {
         </div>
       </main>
 
-      <DependencyFooter dependencies={dependencies} />
+      <DependencyFooter
+        dependencies={dependencies}
+        appVersion={config?.app_version}
+        onDependenciesChange={setDependencies}
+      />
 
       <FolderDialog
         open={folderOpen}

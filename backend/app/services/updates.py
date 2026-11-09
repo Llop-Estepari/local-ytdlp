@@ -1,4 +1,4 @@
-"""Best-effort update checks for yt-dlp and FFmpeg."""
+"""Best-effort update checks for Vidora, yt-dlp and FFmpeg."""
 
 from __future__ import annotations
 
@@ -10,8 +10,18 @@ from datetime import datetime, timezone
 import httpx
 from packaging.version import InvalidVersion, Version
 
+from .. import __version__
+
 _CACHE_TTL = 3600.0
 _HEADERS = {"User-Agent": "Vidora/1.0"}
+_APP_REPO = "Llop-Estepari/local-ytdlp"
+_APP_VERSION_URL = (
+    "https://raw.githubusercontent.com/Llop-Estepari/local-ytdlp/main/"
+    "backend/app/__init__.py"
+)
+_APP_VERSION_RE = re.compile(
+    r"^__version__\s*=\s*[\"']([^\"']+)[\"']", re.MULTILINE
+)
 
 
 def _parse_version(raw: str | None) -> Version | None:
@@ -42,6 +52,13 @@ def _update_available(installed: str | None, latest: str | None) -> bool | None:
     return available > current
 
 
+def _extract_app_version(source: str) -> str | None:
+    match = _APP_VERSION_RE.search(source)
+    if not match:
+        return None
+    return match.group(1).strip() or None
+
+
 class UpdateChecker:
     def __init__(self) -> None:
         self._cached: dict | None = None
@@ -58,11 +75,13 @@ class UpdateChecker:
         if not refresh and self._cached and now - self._cached_at < _CACHE_TTL:
             return self._cached
 
-        ytdlp_result, ffmpeg_result = await asyncio.gather(
+        ytdlp_result, ffmpeg_result, app_result = await asyncio.gather(
             self._check_ytdlp(ytdlp_installed),
             self._check_ffmpeg(ffmpeg_installed),
+            self._check_app(__version__),
         )
         payload = {
+            "app": app_result,
             "ytdlp": ytdlp_result,
             "ffmpeg": ffmpeg_result,
             "checked_at": datetime.now(timezone.utc).isoformat(),
@@ -70,6 +89,64 @@ class UpdateChecker:
         self._cached = payload
         self._cached_at = now
         return payload
+
+    async def _check_app(self, installed: str) -> dict:
+        try:
+            async with httpx.AsyncClient(
+                timeout=8.0, headers=_HEADERS, follow_redirects=True
+            ) as client:
+                latest = await self._latest_app_version(client)
+            if not isinstance(latest, str) or not latest:
+                raise ValueError("Respuesta sin versión")
+            normalized = _normalized_version(latest)
+            return {
+                "installed": installed,
+                "latest": normalized,
+                "update_available": _update_available(installed, normalized),
+                "error": None,
+            }
+        except Exception:
+            return {
+                "installed": installed,
+                "latest": None,
+                "update_available": None,
+                "error": "No se pudo comprobar la última versión de Vidora.",
+            }
+
+    async def _latest_app_version(self, client: httpx.AsyncClient) -> str | None:
+        response = await client.get(
+            f"https://api.github.com/repos/{_APP_REPO}/releases/latest"
+        )
+        if response.status_code != 404:
+            response.raise_for_status()
+            tag = response.json().get("tag_name")
+            if isinstance(tag, str) and _parse_version(tag) is not None:
+                return tag
+
+        response = await client.get(
+            f"https://api.github.com/repos/{_APP_REPO}/tags?per_page=100"
+        )
+        if response.status_code == 200:
+            tags = response.json()
+            versions = [
+                item.get("name")
+                for item in tags
+                if isinstance(item, dict)
+                and isinstance(item.get("name"), str)
+                and not any(
+                    marker in item["name"].lower()
+                    for marker in ("dev", "rc", "beta", "alpha")
+                )
+                and _parse_version(item["name"]) is not None
+            ]
+            if versions:
+                return max(versions, key=lambda value: _parse_version(value))
+
+        response = await client.get(_APP_VERSION_URL)
+        if response.status_code == 404:
+            return None
+        response.raise_for_status()
+        return _extract_app_version(response.text)
 
     async def _check_ytdlp(self, installed: str | None) -> dict:
         if not installed:

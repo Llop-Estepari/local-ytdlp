@@ -51,7 +51,7 @@ backend/
       formats.py       Detección de formatos y calidades reales
       fs.py            Sandbox de carpetas y apertura del explorador
       progress.py      Parser de la plantilla de progreso de yt-dlp
-      tools.py         Detección de yt-dlp y FFmpeg
+      tools.py         Detección y actualización de yt-dlp y FFmpeg
       updates.py       Comprobación de versiones publicadas
       ytdlp.py         Comandos de análisis y descarga
   tests/               Unitarias + integración real
@@ -201,4 +201,4 @@ Todas las descargas usan `--ignore-config`, `--windows-filenames`, `--trim-filen
 - No se usa una base de datos: el estado vive en memoria y los archivos en disco.
 - Las descargas simultáneas están aisladas por id y carpeta temporal.
 - El historial no se conserva al cerrar el servicio.
-- La comprobación de actualizaciones solo informa; no modifica instalaciones automáticamente.
+- El pie muestra la versión de Vidora y las de yt-dlp/FFmpeg. La comprobación de actualizaciones no modifica instalaciones por sí sola: el usuario decide qué herramienta actualizar desde el pie de la aplicación.

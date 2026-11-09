@@ -242,7 +242,7 @@ backend/.venv/bin/pip install --upgrade -r backend/requirements.txt
 
 La interfaz compilada se actualiza con `git pull`; no hace falta Node.js. Solo los mantenedores deben regenerar `frontend/out` con `./scripts/build-frontend.sh` después de cambiar el frontend.
 
-También puedes usar el botón **Comprobar** del pie de la aplicación para consultar las últimas versiones publicadas.
+También puedes usar el botón **Comprobar** del pie de la aplicación para consultar la última versión de Vidora y las versiones publicadas de yt-dlp y FFmpeg. Si hay una actualización de yt-dlp o FFmpeg, aparecerá un botón **Actualizar** junto al resultado. yt-dlp se actualiza dentro del entorno de la aplicación; FFmpeg usa winget, Homebrew o el gestor de paquetes del sistema y puede pedir permisos de administrador. La versión de Vidora se consulta en GitHub.
 
 ## Desinstalar
 

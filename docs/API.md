@@ -97,10 +97,16 @@ Público solo para loopback. Devuelve el token local. `Cache-Control: no-store`.
 
 ### `POST /api/dependencies/check-updates`
 
-Consulta PyPI y el repositorio de FFmpeg. Sin cuerpo.
+Consulta GitHub (versión de Vidora) y PyPI y el repositorio de FFmpeg. Sin cuerpo.
 
 ```json
 {
+  "app": {
+    "installed": "1.0.0",
+    "latest": "1.0.0",
+    "update_available": false,
+    "error": null
+  },
   "ytdlp": {
     "installed": "2026.10.26",
     "latest": "2026.10.26",
@@ -118,6 +124,48 @@ Consulta PyPI y el repositorio de FFmpeg. Sin cuerpo.
 ```
 
 `update_available` puede ser `null` si no se pueden comparar las versiones.
+
+### `POST /api/dependencies/update`
+
+Actualiza `yt-dlp` o FFmpeg. Cuerpo:
+
+```json
+{ "tool": "ytdlp" }
+```
+
+`tool` admite `ytdlp` o `ffmpeg`. La respuesta incluye el estado actualizado de las dependencias y una nueva comprobación de versiones si la actualización terminó correctamente.
+
+```json
+{
+  "tool": "ytdlp",
+  "updated": true,
+  "version": "2026.11.01",
+  "error": null,
+  "hint": null,
+  "dependencies": {
+    "ok": true,
+    "ytdlp": { "installed": true, "version": "2026.11.01", "path": "..." },
+    "ffmpeg": { "installed": true, "version": "9.0.2", "path": "/usr/bin/ffmpeg" }
+  },
+  "check": {
+    "ytdlp": {
+      "installed": "2026.11.01",
+      "latest": "2026.11.01",
+      "update_available": false,
+      "error": null
+    },
+    "ffmpeg": {
+      "installed": "9.0.2",
+      "latest": "9.0.2",
+      "update_available": false,
+      "error": null
+    },
+    "checked_at": "2026-11-07T16:58:03+00:00"
+  }
+}
+```
+
+Si la actualización falla, `updated` es `false`, `check` es `null` y `error`/`hint` explican el motivo. yt-dlp se actualiza con `pip` en el entorno de la aplicación o con `-U` si es un binario independiente. FFmpeg se actualiza con winget en Windows, Homebrew en macOS y el gestor de paquetes del sistema en Linux; si se necesitan permisos de administrador se usa `pkexec` cuando está disponible.
 
 ## Análisis
 

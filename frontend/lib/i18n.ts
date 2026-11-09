@@ -76,6 +76,11 @@ const es = {
 
   "footer.updateAvailable": ({ tools }) =>
     `Actualización disponible: ${tools}`,
+  "footer.updateTool": ({ tool }) => `Actualizar ${tool}`,
+  "footer.updatingTool": ({ tool }) => `Actualizando ${tool}…`,
+  "footer.updateDone": ({ tool, version }) =>
+    version ? `${tool} actualizado a ${version}` : `${tool} actualizado`,
+  "footer.updateFailed": ({ tool }) => `No se pudo actualizar ${tool}`,
   "footer.checkFailed": "No se pudo comprobar",
   "footer.upToDate": "Todo actualizado",
   "footer.notInstalled": ({ tool }) => `${tool} no instalado`,
@@ -236,6 +241,11 @@ const en: Record<MessageKey, Message> = {
   "dependency.runInstaller": "Run the application installer.",
 
   "footer.updateAvailable": ({ tools }) => `Update available: ${tools}`,
+  "footer.updateTool": ({ tool }) => `Update ${tool}`,
+  "footer.updatingTool": ({ tool }) => `Updating ${tool}…`,
+  "footer.updateDone": ({ tool, version }) =>
+    version ? `${tool} updated to ${version}` : `${tool} updated`,
+  "footer.updateFailed": ({ tool }) => `Could not update ${tool}`,
   "footer.checkFailed": "Could not check",
   "footer.upToDate": "Everything up to date",
   "footer.notInstalled": ({ tool }) => `${tool} not installed`,

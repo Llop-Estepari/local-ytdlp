@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
 from app.core.config import Settings
+from app.services.tools import ToolUpdateResult
 
 
 def test_health_is_public(client: TestClient) -> None:
@@ -123,3 +124,124 @@ def test_cors_preflight_for_dev_origin(client: TestClient) -> None:
     )
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
+def test_update_dependency_requires_token(client: TestClient) -> None:
+    response = client.post("/api/dependencies/update", json={"tool": "ytdlp"})
+    assert response.status_code == 401
+
+
+def test_update_dependency_rejects_unknown_tool(auth_client: TestClient) -> None:
+    response = auth_client.post("/api/dependencies/update", json={"tool": "curl"})
+    assert response.status_code == 422
+
+
+def test_update_dependency_returns_refreshed_state(
+    auth_client: TestClient, monkeypatch
+) -> None:
+    ctx = auth_client.app.state.ctx
+
+    async def fake_update(tool: str) -> ToolUpdateResult:
+        assert tool == "ytdlp"
+        return ToolUpdateResult(True)
+
+    async def fake_dependencies(refresh: bool = False) -> dict:
+        assert refresh is True
+        return {
+            "ok": True,
+            "ytdlp": {
+                "installed": True,
+                "version": "2026.11.01",
+                "path": "/tmp/yt-dlp",
+            },
+            "ffmpeg": {
+                "installed": True,
+                "version": "9.0.2",
+                "path": "/usr/bin/ffmpeg",
+            },
+        }
+
+    async def fake_check(**_kwargs) -> dict:
+        return {
+            "app": {
+                "installed": "1.0.0",
+                "latest": "1.0.0",
+                "update_available": False,
+                "error": None,
+            },
+            "ytdlp": {
+                "installed": "2026.11.01",
+                "latest": "2026.11.01",
+                "update_available": False,
+                "error": None,
+            },
+            "ffmpeg": {
+                "installed": "9.0.2",
+                "latest": "9.0.2",
+                "update_available": False,
+                "error": None,
+            },
+            "checked_at": "2026-11-09T12:00:00+00:00",
+        }
+
+    monkeypatch.setattr(ctx.tools, "update", fake_update)
+    monkeypatch.setattr(ctx.tools, "dependencies", fake_dependencies)
+    monkeypatch.setattr(ctx.updates, "check", fake_check)
+
+    response = auth_client.post(
+        "/api/dependencies/update", json={"tool": "ytdlp"}
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["updated"] is True
+    assert payload["version"] == "2026.11.01"
+    assert payload["dependencies"]["ytdlp"]["version"] == "2026.11.01"
+    assert payload["check"]["ytdlp"]["update_available"] is False
+
+
+def test_update_dependency_returns_failure_hint(
+    auth_client: TestClient, monkeypatch
+) -> None:
+    ctx = auth_client.app.state.ctx
+
+    async def fake_update(_tool: str) -> ToolUpdateResult:
+        return ToolUpdateResult(
+            False,
+            error="ERROR: Permission denied",
+            hint="La actualización necesita permisos de administrador.",
+        )
+
+    async def fake_dependencies(refresh: bool = False) -> dict:
+        assert refresh is True
+        return {
+            "ok": True,
+            "ytdlp": {
+                "installed": True,
+                "version": "2026.10.26",
+                "path": "/tmp/yt-dlp",
+            },
+            "ffmpeg": {
+                "installed": True,
+                "version": "9.0.2",
+                "path": "/usr/bin/ffmpeg",
+            },
+        }
+
+    async def fail_check(**_kwargs) -> dict:  # pragma: no cover - must not run
+        raise AssertionError("check should not run after a failed update")
+
+    monkeypatch.setattr(ctx.tools, "update", fake_update)
+    monkeypatch.setattr(ctx.tools, "dependencies", fake_dependencies)
+    monkeypatch.setattr(ctx.updates, "check", fail_check)
+
+    response = auth_client.post(
+        "/api/dependencies/update", json={"tool": "ytdlp"}
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["updated"] is False
+    assert payload["error"] == "ERROR: Permission denied"
+    assert "permisos" in payload["hint"]
+    assert payload["check"] is None

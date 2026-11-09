@@ -17,6 +17,7 @@ from ..models.schemas import (
     AnalyzeResponse,
     ConfigResponse,
     DependenciesResponse,
+    DependencyUpdateResponse,
     DirectoryListing,
     DownloadRequest,
     DownloadState,
@@ -26,6 +27,7 @@ from ..models.schemas import (
     RootEntry,
     SessionResponse,
     UpdateCheckResponse,
+    UpdateToolRequest,
 )
 from ..services.downloader import FINAL_STATUSES
 from ..services.formats import build_media_info, build_playlist_info, is_playlist_info
@@ -77,6 +79,40 @@ async def check_updates(request: Request) -> UpdateCheckResponse:
         refresh=True,
     )
     return UpdateCheckResponse(**payload)
+
+
+@router.post("/dependencies/update", response_model=DependencyUpdateResponse, tags=["tools"])
+async def update_dependency(
+    payload: UpdateToolRequest, request: Request
+) -> DependencyUpdateResponse:
+    ctx = _ctx(request)
+    result = await ctx.tools.update(payload.tool)
+    dependencies_payload = DependenciesResponse(
+        **await ctx.tools.dependencies(refresh=True)
+    )
+    version = (
+        dependencies_payload.ytdlp.version
+        if payload.tool == "ytdlp"
+        else dependencies_payload.ffmpeg.version
+    )
+    check = None
+    if result.updated:
+        check = UpdateCheckResponse(
+            **await ctx.updates.check(
+                ytdlp_installed=dependencies_payload.ytdlp.version,
+                ffmpeg_installed=dependencies_payload.ffmpeg.version,
+                refresh=True,
+            )
+        )
+    return DependencyUpdateResponse(
+        tool=payload.tool,
+        updated=result.updated,
+        version=version,
+        error=result.error,
+        hint=result.hint,
+        dependencies=dependencies_payload,
+        check=check,
+    )
 
 
 @router.post("/analyze", response_model=AnalyzeResponse, tags=["media"])

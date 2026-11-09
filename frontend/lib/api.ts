@@ -2,10 +2,12 @@ import type {
   AnalyzeResult,
   ConfigResponse,
   DependenciesResponse,
+  DependencyUpdateResponse,
   DirectoryListing,
   DownloadState,
   RootEntry,
   StartDownloadInput,
+  ToolName,
   UpdateCheckResponse,
 } from "@/types/api";
 
@@ -178,6 +180,11 @@ export const api = {
   checkUpdates: () =>
     request<UpdateCheckResponse>("/api/dependencies/check-updates", {
       method: "POST",
+    }),
+  updateDependency: (tool: ToolName) =>
+    request<DependencyUpdateResponse>("/api/dependencies/update", {
+      method: "POST",
+      body: JSON.stringify({ tool }),
     }),
   analyze: (url: string) =>
     request<AnalyzeResult>("/api/analyze", {
